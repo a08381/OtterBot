@@ -13,6 +13,7 @@ def QQGroupCommand_group(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
         user_id = receive["user_id"]
         group_id = receive["group_id"]
 
@@ -20,7 +21,7 @@ def QQGroupCommand_group(*args, **kwargs):
         second_command_msg = receive["message"].replace("/group","",1).strip()
         second_command = second_command_msg.split(" ")[0].strip()
         group_bots = json.loads(group.bots)
-        if(user_info["role"]!="owner" and user_info["role"]!="admin"):
+        if(user_info["role"]!="owner" and user_info["role"]!="admin" and str(user_id) != str(bot.owner_id)):
             msg = "仅群主与管理员有权限管理群"
         else:
             if(second_command=="register"):

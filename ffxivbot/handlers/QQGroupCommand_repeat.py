@@ -13,11 +13,12 @@ def QQGroupCommand_repeat(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
         user_id = receive["user_id"]
         group_id = receive["group_id"]
 
         msg = "default msg"
-        if(user_info["role"]=="owner" or user_info["role"]=="admin"):
+        if((user_info["role"]=="owner" or user_info["role"]=="admin") and str(user_id) != str(bot.owner_id)):
             msg = "仅非群主与管理员有权限开启复读机系统"
         else:
             ori_msg = receive["message"].replace("/repeat","",1).strip()

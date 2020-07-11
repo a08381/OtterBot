@@ -13,6 +13,7 @@ def QQGroupCommand_repeat_ban(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
         user_id = receive["user_id"]
         group_id = receive["group_id"]
 
@@ -20,7 +21,7 @@ def QQGroupCommand_repeat_ban(*args, **kwargs):
         second_command_msg = receive["message"].replace("/repeat_ban","",1).strip()
         second_command = second_command_msg.split(" ")[0].strip()
         if(second_command=="set"):
-            if(user_info["role"]!="owner"):
+            if(user_info["role"]!="owner" and str(user_id) != str(bot.owner_id)):
                 msg = "仅群主有权限开启复读机检测系统"
             else:
                 ori_msg = second_command_msg.replace(second_command,"",1).strip()
@@ -40,7 +41,7 @@ def QQGroupCommand_repeat_ban(*args, **kwargs):
                         group.save()
                         msg = "复读机监控系统已关闭"
         elif(second_command=="disable"):
-            if(user_info["role"]!="owner"):
+            if(user_info["role"]!="owner" and str(user_id) != str(bot.owner_id)):
                 msg = "仅群主有权限关闭复读机检测系统"
             else:
                 group.repeat_ban = -1

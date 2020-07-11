@@ -5,7 +5,21 @@ import logging
 import json
 import random
 import requests
+import re
 import os
+
+
+def CHECK_NAME_VALID(name: str):
+    if name == "攻" or name == "受":
+        return False
+    is_valid_char = re.compile(r"^[\u4e00-\u9fa5A-Za-z\d_]+$")
+    is_all_num = re.compile(r"^\d+$")
+    if is_valid_char.match(name) and not is_all_num.match(name):
+        replace_pattern = re.compile(r"[^\x00-\xff]")
+        length = len(replace_pattern.sub(name, "aa"))
+        if 0 < length <= 16:
+            return True
+    return False
 
 
 def QQCommand_mxh(*args, **kwargs):
@@ -28,20 +42,24 @@ def QQCommand_mxh(*args, **kwargs):
         else:
             a_name = args[0].strip()
             b_name = args[1].strip()
-            data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mxh_story.json")
-            with open(data_path, 'r', encoding='UTF-8') as load_f:
-                load_dict = json.load(load_f)
-                stories = []
-                for item in load_dict:
-                    stories += item["stories"]
+            if CHECK_NAME_VALID(a_name) and CHECK_NAME_VALID(b_name):
+                data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mxh_story.json")
+                with open(data_path, 'r', encoding='UTF-8') as load_f:
+                    load_dict = json.load(load_f)
+                    stories = []
+                    for item in load_dict:
+                        stories += item["stories"]
 
-                story = ""
-                while "<攻>" not in story:
-                    story = random.sample(stories, 1)[0]
+                    story = ""
+                    while "<攻>" not in story:
+                        story = random.sample(stories, 1)[0]
 
-                story = story.replace('<攻>', a_name)
-                story = story.replace('<受>', b_name)
-                msg = story
+                    story = story.replace('<攻>', a_name)
+                    story = story.replace('<受>', b_name)
+                    msg = story
+
+            else:
+                msg = "参数格式错误：/mxh 攻 受（8个字以内）"
 
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

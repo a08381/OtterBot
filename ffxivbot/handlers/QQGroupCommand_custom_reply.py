@@ -16,6 +16,7 @@ def QQGroupCommand_custom_reply(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
         user_id = receive["user_id"]
         group_id = receive["group_id"]
         msg = "default msg"
@@ -25,7 +26,7 @@ def QQGroupCommand_custom_reply(*args, **kwargs):
             segs.remove("")
         second_command = segs[0].strip()
         if(second_command=="add"):
-            if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+            if(user_info["role"]!="owner" and user_info["role"]!="admin" and str(user_id) != str(bot.owner_id)):
                 msg = "仅群主与管理员有权限设置自定义回复"
             else:
                 custom_key = segs[1].strip()
@@ -37,7 +38,7 @@ def QQGroupCommand_custom_reply(*args, **kwargs):
                     custom.save()
                     msg = "自定义回复已添加成功，使用\"{}\"查看".format(custom_key)
         elif(second_command=="del"):
-            if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+            if(user_info["role"]!="owner" and user_info["role"]!="admin" and str(user_id) != str(bot.owner_id)):
                 msg = "仅群主与管理员有权限设置自定义回复"
             else:
                 custom_key = segs[1].strip()

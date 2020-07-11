@@ -11,12 +11,30 @@ CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
 
+
 def tata(req):
     if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
         if settings.DEBUG:
             print("optype:{}".format(optype))
+        if optype == "active_code":
+            active_code = req.POST.get("active_code")
+            try:
+                code = ActiveCode.objects.get(code=active_code)
+                res_dict = {
+                    "code": code.code,
+                    "is_used": code.is_used,
+                    "response": "success",
+                }
+                code.is_used = True
+                code.save()
+            except Exception as e:
+                if "ActiveCode matching query does not exist" in str(e):
+                    res_dict = {"response": "error", "msg": "邀请码填写错误"}
+                else:
+                    res_dict = {"response": "error", "msg": str(e)}
+            return JsonResponse(res_dict)
         if optype == "add_or_update_bot":
             botName = req.POST.get("botName")
             botID = req.POST.get("botID")
@@ -53,13 +71,14 @@ def tata(req):
                 bot.api_post_url = api_post_url
                 bot.auto_accept_friend = autoFriend and "true" in autoFriend
                 bot.auto_accept_invite = autoInvite and "true" in autoInvite
-                if len(QQBot.objects.all()) >= 250 and bot_created:
+                if len(QQBot.objects.all()) > 500 and bot_created:
                     res_dict = {"response": "error", "msg": "机器人总数过多，请稍后再试"}
                     return JsonResponse(res_dict)
                 bot.save()
                 res_dict = {
                     "response": "success",
                     "msg": "{}({})".format(bot.name, bot.user_id) + ("添加" if bot_created else "更新") + "成功，Token为:",
+                    "id": bot.id,
                     "token": bot.access_token,
                 }
             return JsonResponse(res_dict)
@@ -76,6 +95,10 @@ def tata(req):
                 else:
                     res_dict = {"response": "error", "msg": str(e)}
                 return JsonResponse(res_dict)
+            if optype == "switch_r18":
+                bot.r18 = not bot.r18
+                bot.save()
+                res_dict["response"] = "success"
             if optype == "switch_public":
                 bot.public = not bot.public
                 bot.save()
@@ -92,8 +115,8 @@ def tata(req):
                 web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
                 web_base = web_base.replace("https://", "")
                 web_base = web_base.replace("http://", "")
-                ws_url = "ws://" + os.path.join(web_base, "ws/")
-                http_url = "http://" + os.path.join(web_base, "http/")
+                ws_url = "wss://" + os.path.join(web_base, "ws/")
+                http_url = "https://" + os.path.join(web_base, "http/")
                 bot_conf = json.loads(
                     '{\
                         "host": "0.0.0.0",\
@@ -158,18 +181,22 @@ def tata(req):
         bb["name"] = bot.name
         if bot.public:
             bb["user_id"] = bot.user_id
+            bb["owner_id"] = bot.owner_id
         else:
             mid = len(bot.user_id) // 2
             user_id = bot.user_id[: mid - 2] + "*" * 4 + bot.user_id[mid + 2:]
             bb["user_id"] = user_id
+            mid = len(bot.owner_id) // 2
+            owner_id = bot.owner_id[: mid - 2] + "*" * 4 + bot.owner_id[mid + 2:]
+            bb["owner_id"] = owner_id
         bb["group_num"] = group_num
         bb["friend_num"] = friend_num
         bb["coolq_edition"] = coolq_edition
-        bb["owner_id"] = bot.owner_id
         bb["online"] = time.time() - bot.event_time < 300
         bb["id"] = bot.id
         bb["public"] = bot.public
         bb["autoinvite"] = bot.auto_accept_invite
         bb["autofriend"] = bot.auto_accept_friend
+        bb["r18"] = bot.r18
         bot_list.append(bb)
     return ren2res("tata.html", req, {"bots": bot_list})

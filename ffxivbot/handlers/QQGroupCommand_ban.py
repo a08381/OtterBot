@@ -15,6 +15,7 @@ def QQGroupCommand_ban(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
         user_id = receive["user_id"]
         group_id = receive["group_id"]
 
@@ -24,7 +25,7 @@ def QQGroupCommand_ban(*args, **kwargs):
         if(second_command=="" or second_command=="help"):
             msg = "/ban $user $time: 给$user开启时长为$time分钟的禁言投票\n/ban $user: 给$user的禁言投票+1"
         elif(second_command=="set"):
-            if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+            if(user_info["role"]!="owner" and user_info["role"]!="admin" and str(user_id) != str(bot.owner_id)):
                 msg = "仅群主与管理员有权限设置禁言投票"
             else:
                 ban_cnt = second_command_msg.replace(second_command,"",1).strip()

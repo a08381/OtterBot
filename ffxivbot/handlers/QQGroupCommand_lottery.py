@@ -24,6 +24,7 @@ def QQGroupCommand_lottery(*args, **kwargs):
         TIMEFORMAT = global_config["TIMEFORMAT"]
         action_list = []
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
         user_id = receive["user_id"]
         group = kwargs["group"]
         user_info = kwargs["user_info"]
@@ -78,7 +79,7 @@ def QQGroupCommand_lottery(*args, **kwargs):
                         msg = lott.info(TIMEFORMAT = TIMEFORMAT)
                     elif sec_command=="halt":
                         try:
-                            assert lott.host_user==str(user_id) or user_info["role"]=="admin" or user_info["role"]=="owner", "您不是抽奖组织者或管理员，无权更改抽奖信息"
+                            assert lott.host_user==str(user_id) or user_info["role"]=="admin" or user_info["role"]=="owner" or str(user_id) == str(bot.owner_id), "您不是抽奖组织者或管理员，无权更改抽奖信息"
                             assert lott.end_time==0, "抽奖已结束"
                         except AssertionError as e:
                             msg = str(e)

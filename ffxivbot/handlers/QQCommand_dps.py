@@ -22,7 +22,7 @@ def QQCommand_dps(*args, **kwargs):
         boss_list = Boss.objects.all()
         boss_obj = None
         msg = ""
-        CN_source = False
+        CN_source = True
         msg = "dps command is halt due to "
         if receive_msg.find("help") == 0 or receive_msg == "":
             msg = "1.  查询总排名\n\
@@ -56,6 +56,11 @@ def QQCommand_dps(*args, **kwargs):
             if not boss_obj:
                 msg = "未能定位Boss:%s" % (receive_msg)
             else:
+                if (
+                    boss_obj.cn_add_time == 0
+                    or boss_obj.cn_add_time == boss_obj.add_time
+                ):
+                    CN_source = False
                 job_list = Job.objects.all()
                 job_obj = None
                 for job in job_list:
@@ -91,6 +96,7 @@ def QQCommand_dps(*args, **kwargs):
                         dps_type = "rdps"
                         receive_msg = receive_msg.replace("rdps", "", 1)
                     if "国际服" in receive_msg:
+                        CN_source = False
                         receive_msg = receive_msg.replace("国际服", "day#-1")
                     if boss.frozen:
                         day = -1

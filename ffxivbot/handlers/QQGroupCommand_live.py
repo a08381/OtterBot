@@ -17,6 +17,7 @@ def QQGroupCommand_live(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
         user_id = receive["user_id"]
         group_id = receive["group_id"]
 
@@ -30,7 +31,7 @@ def QQGroupCommand_live(*args, **kwargs):
         except IndexError:
             optype = "help"
         if(optype=="add"):
-            if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+            if(user_info["role"]!="owner" and user_info["role"]!="admin" and str(user_id) != str(bot.owner_id)):
                 msg = "仅群主与管理员有权限设置直播订阅"
             else:
                 try:
@@ -52,7 +53,7 @@ def QQGroupCommand_live(*args, **kwargs):
                 except IndexError:
                     msg = "参数个数错误，请检查命令"
         elif(optype=="del"):
-            if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+            if(user_info["role"]!="owner" and user_info["role"]!="admin" and str(user_id) != str(bot.owner_id)):
                 msg = "仅群主与管理员有权限设置直播订阅"
             else:
                 try:

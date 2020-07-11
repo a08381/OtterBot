@@ -51,7 +51,7 @@ def search_id(glamour_id):
 
 def result_to_img(result,glamour_id,bot_version):
     try:
-        if bot_version == 'air' and False:
+        if bot_version == 'air':
             msg ="此机器人版本为Air无法发送图片,请前往原地址查看\nhttps://www.ffxivsc.cn/page/glamour.html?glamourId={}".format(glamour_id)
         else:
             text = u"{}".format(result["sc"])
@@ -127,7 +127,7 @@ def QQCommand_hh(*args, **kwargs):
         item_name = ""
         item_flag = False
         receive_msg = receive["message"].replace('/hh','',1).strip()
-        bot_version = json.loads(bot.version_info)["coolq_edition"] if bot.version_info != '{}' else "air"
+        bot_version = json.loads(bot.version_info)["coolq_edition"].lower() if bot.version_info != '{}' else "pro"
         if receive_msg.find("help")==0 or receive_msg=="":
             msg = "/hh [职业] [种族] [性别] : 随机返回至少一个参数的幻化\n"+\
                     "如：/hh 占星 or /hh 拉拉菲尔 男\n"+ \

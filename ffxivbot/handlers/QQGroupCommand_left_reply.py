@@ -26,7 +26,7 @@ def QQGroupCommand_left_reply(*args, **kwargs):
                 second_command = second_command_msg.split(" ")[0].strip()
                 if(second_command=="set"):
                     receive_msg = second_command_msg.replace(second_command,"",1).strip()
-                    if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+                    if(user_info["role"]!="owner" and user_info["role"]!="admin" and str(user_id) != str(bot.owner_id)):
                         msg = "仅群主与管理员有权限设置群功能控制"
                     else:
                         try:

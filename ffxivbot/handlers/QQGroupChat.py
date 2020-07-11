@@ -78,7 +78,7 @@ def QQGroupChat(*args, **kwargs):
                     chat.save()
 
         #tuling chatbot
-        chat_enable = group_commands.get("/chat", "enable") != "disable"
+        chat_enable = group_commands.get("/chat", "disable") == "enable"
         chatting = "[CQ:at,qq=%s]"%(receive["self_id"]) in receive["message"]
         wechat = False
         if "self_wechat_id" in receive:

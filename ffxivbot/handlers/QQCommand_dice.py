@@ -9,17 +9,28 @@ import dice
 
 def QQCommand_dice(*args, **kwargs):
     action_list = []
+    receive = kwargs["receive"]
     try:
         QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
-        receive = kwargs["receive"]
 
         dice_msg = receive["message"].replace("/dice", "", 1).strip()
-        # if "d" in dice_msg:
-        #     try:
-        #         cnt = int(dice_msg.split("d"))[0]
-        #         assert(cnt<=100)
-        #     except:
-        #         cnt = 100
+
+        if len(dice_msg) > 50:
+            return action_list
+
+        pa = re.compile(r'(\d+)(d\d+)')
+        pos = 0
+        while True:
+            ma = pa.search(dice_msg, pos)
+            if ma:
+                i = int(ma.group(1))
+                if i > 10:
+                    dice_msg = dice_msg.replace(ma.group(0), "10" + ma.group(2))
+                    ma = pa.search(dice_msg, pos)
+                pos = ma.span(0)[1]
+            else:
+                break
+
         msg = "[CQ:at,qq={}]".format(receive["user_id"])
         msg += str(dice.roll(dice_msg))
         reply_action = reply_message_action(receive, msg)

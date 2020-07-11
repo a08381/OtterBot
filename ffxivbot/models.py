@@ -589,6 +589,14 @@ class LuckData(models.Model):
         return str(self.number)
 
 
+class ActiveCode(models.Model):
+    code = models.CharField(default="", max_length=36, unique=True)
+    is_used = models.BooleanField(default=False, blank=True)
+
+    def __str__(self):
+        return str(self.code)
+
+
 class TomonBot(models.Model):
     qqbot = models.ForeignKey(
         QQBot, related_name="tomon_bot", on_delete=models.CASCADE, blank=True, null=True

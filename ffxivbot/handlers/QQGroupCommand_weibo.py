@@ -29,6 +29,7 @@ def QQGroupCommand_weibo(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
+        bot = kwargs["bot"]
         user_id = receive["user_id"]
         group_id = receive["group_id"]
 
@@ -36,7 +37,7 @@ def QQGroupCommand_weibo(*args, **kwargs):
         second_command_msg = receive["message"].replace("/weibo","",1).strip()
         second_command = second_command_msg.split(" ")[0].strip()
         if(second_command=="add"):
-            if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+            if(user_info["role"]!="owner" and user_info["role"]!="admin" and str(user_id) != str(bot.owner_id)):
                 msg = "仅群主与管理员有权限设置微博订阅"
             else:
                 weibo_name = second_command_msg.replace('add','',1).strip()
@@ -58,7 +59,7 @@ def QQGroupCommand_weibo(*args, **kwargs):
                         msg_action = reply_message_action(receive, tmp_msg)
                         action_list.append(msg_action)
         elif(second_command=="del"):
-            if(user_info["role"]!="owner" and user_info["role"]!="admin" ):
+            if(user_info["role"]!="owner" and user_info["role"]!="admin" and str(user_id) != str(bot.owner_id)):
                 msg = "仅群主与管理员有权限设置微博订阅"
             else:
                 weibo_name = second_command_msg.replace('del','',1).strip()

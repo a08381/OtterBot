@@ -25,6 +25,7 @@ import html
 import codecs
 import base64
 import requests
+import io
 import math
 from hashlib import md5
 import time
@@ -751,12 +752,46 @@ class PikaConsumer(object):
                 if receive["message"].find("/help") == 0:
                     msg = ""
                     for (k, v) in handlers.commands.items():
-                        command_enable = True
-                        if group and group_commands:
-                            command_enable = group_commands.get(k, "enable") == "enable"
-                        if command_enable:
+                        command_enable = k != "/yiff"
+                        if command_enable and group and group_commands:
                             msg += "{}: {}\n".format(k, v)
-                    msg += "具体介绍详见Wiki使用手册: {}\n".format(
+
+                    args = msg.splitlines(keepends=True)
+                    pages = math.ceil(len(args) / 10)
+
+                    pat = re.compile(r"^/help\s*(\d*)")
+                    ma = pat.match(receive["message"])
+                    page = ma.group(1)
+                    if not page:
+                        page = 1
+                    else:
+                        page = int(page)
+                    min_line = 10 * (page - 1)
+                    max_line = 10 * page
+
+                    args = args[min_line:max_line]
+
+                    msg = "当前页码：{}/{}\n\n".format(page, pages)
+
+                    for line in args:
+                        msg += line
+
+                    '''
+                    bot_version = json.loads(bot.version_info)["coolq_edition"].lower() if bot.version_info != '{}' else "pro"
+                    if bot_version == "pro":
+                        font = ImageFont.truetype(os.path.join(FFXIVBOT_ROOT, "ffxivbot/handlers/arknights/temp/msyh.ttc"), 32)
+                        width, height = font.getsize_multiline(msg)
+                        im = Image.new("RGB", (width + 40, height + 40), (255, 255, 255))
+                        dr = ImageDraw.Draw(im)
+                        dr.text((20, 20), msg, font=font, fill="#000000")
+                        output_buffer = io.BytesIO()
+                        im.save(output_buffer, format='JPEG')
+                        byte_data = output_buffer.getvalue()
+                        base64_str = base64.b64encode(byte_data).decode("utf-8")
+                        msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
+                    '''
+
+                    msg += "\n具体介绍详见Wiki使用手册: {}\n".format(
                         "https://github.com/Bluefissure/FFXIVBOT/wiki/"
                     )
                     msg = msg.strip()

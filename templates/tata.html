@@ -35,6 +35,9 @@
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">现有机器人</h3>
+              <button class="btn btn-primary" style="float: right;" data-toggle="modal" data-target="#before_add_bot">
+                <span class="fa fa-plus-circle"></span>&nbsp;领养/更新机器人
+              </button>
             </div>
             <!-- /.card-header -->
             <div class="card-body">
@@ -48,10 +51,10 @@
                   <th style="text-align: center;">客户端版本</th>
                   <th style="text-align: center;">领养人QQ</th>
                   <th style="text-align: center;">在线情况</th>
+                  <th style="text-align: center;">hso</th>
                   <th style="text-align: center;">公开</th>
-                  <th style="text-align: center;">配置</th>
                   <th style="text-align: center;">删除</th>
-                  <!-- <th><center>配置</center></th> -->
+                  <th style="text-align: center;">配置</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -72,32 +75,46 @@
                     <td style="text-align: center; vertical-align: middle">{{ bot.coolq_edition }}</td>
                     <td style="text-align: center; vertical-align: middle">{{ bot.owner_id }}</td>
                     {% if bot.online %}
-                      <td style="text-align: center; vertical-align: middle"><span style="color: #006400;"><b>在线</b></span></td>
+                      <td style="text-align: center; vertical-align: middle"><span
+                              style="color: #006400;"><b>在线</b></span></td>
                     {% else %}
-                      <td style="text-align: center; vertical-align: middle"><span style="color: #8b0000;"><b>离线</b></span></td>
+                      <td style="text-align: center; vertical-align: middle"><span
+                              style="color: #8b0000;"><b>离线</b></span></td>
+                    {% endif %}
+                    {% if bot.r18 %}
+                      <td>
+                        <button type="button" class="btn btn-block btn-info" onclick="switch_r18({{ bot.id }})">开启
+                        </button>
+                      </td>
+                    {% else %}
+                      <td>
+                        <button type="button" class="btn btn-block btn-warning" onclick="switch_r18({{ bot.id }})">关闭
+                        </button>
+                      </td>
                     {% endif %}
                     {% if bot.public %}
+                      <td>
+                        <button type="button" class="btn btn-block btn-info" onclick="switch_public({{ bot.id }})">公开
+                        </button>
+                      </td>
+                    {% else %}
                       <td>
                         <button type="button" class="btn btn-block btn-warning" onclick="switch_public({{ bot.id }})">隐藏
                         </button>
                       </td>
-                    {% else %}
-                      <td>
-                        <button type="button" class="btn btn-block btn-success" onclick="switch_public({{ bot.id }})">公开
-                        </button>
-                      </td>
                     {% endif %}
                     <td>
-                      <button type="button" class="btn btn-block btn-primary" onclick="download_conf({{ bot.id }})">下载</button>
+                      <button type="button" class="btn btn-block btn-danger" onclick="del_bot({{ bot.id }})">删除</button>
                     </td>
                     <td>
-                      <button type="button" class="btn btn-block btn-danger" onclick="del_bot({{ bot.id }})">删除</button>
+                      <button type="button" class="btn btn-block btn-success" onclick="download_conf({{ bot.id }})">下载
+                      </button>
                     </td>
                   </tr>
                 {% endfor %}
 
 
-                </tfoot>
+                </tbody>
               </table>
             </div>
             <!-- /.card-body -->
@@ -107,69 +124,34 @@
       </div>
       <div class="row">
         <div class="col-md-6">
-          <div class="card card-primary">
-            <div class="card-header with-border">
-              <h3 class="card-title">领养/更新机器人</h3>
-            </div>
-            <!-- /.card-header -->
-            <!-- form start -->
-            <div method="post" role="form">
-              <div class="card-body">
-                <div class="form-group">
-                  <label for="botName">昵称(长度>2)</label>
-                  <input type="text" class="form-control" id="botName" placeholder="">
-                </div>
-                <div class="form-group">
-                  <label for="botID">QQ账号</label>
-                  <input type="text" class="form-control" id="botID" placeholder="">
-                </div>
-                <div class="form-group">
-                  <label for="ownerID">主人QQ</label>
-                  <input type="text" class="form-control" id="ownerID" placeholder="">
-                </div>
-                <div class="form-group">
-                  <label for="accessToken">Access Token(长度>5)</label>
-                  <input type="text" class="form-control" id="accessToken" placeholder="" maxlength="16">
-                </div>
-                <div class="form-group">
-                  <label for="tulingToken"><a href="http://www.tuling123.com/" target="_blank">Tuling</a>
-                    Token(留空使用共享图灵账号)</label>
-                  <input type="text" class="form-control" id="tulingToken" placeholder="">
-                </div>
-                <div class="form-group">
-                  <label for="api_post_url">Http API Post URL(留空使用websocket)</label>
-                  <input type="text" class="form-control" id="api_post_url" placeholder="">
-                </div>
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" id="autoFriend"> 自动同意好友请求
-                  </label>
-                </div>
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" id="autoInvite"> 自动同意加群邀请
-                  </label>
-                </div>
-              </div>
-              <!-- /.card-body -->
-
-              <div class="card-footer">
-                <button class="btn btn-primary" onclick="add_or_update_bot()">申请/更新</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
           <!-- DIRECT CHAT -->
-          <div class="card card-warning direct-chat direct-chat-warning">
+          <div class="card card-success direct-chat direct-chat-success">
             <div class="card-header with-border">
               <h3 class="card-title">想说的话</h3>
             </div>
             <!-- /.card-header -->
             <div class="card-body">
               <!-- Conversations are loaded here -->
-              <div class="direct-chat-messages">
+              <div class="direct-chat-messages" style="height: 450px;">
                 <!-- Message. Default to the left -->
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">
+                      <a href="http://botapi.dead-war.cn/" target="_blank">Windmourn</a>
+                    </span>
+                    <span class="direct-chat-timestamp pull-right">2020-6-2 18:05:36</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <a href="http://botapi.dead-war.cn/" target="_blank">
+                    <img class="direct-chat-img" src="https://i.loli.net/2019/03/12/5c87267f13817.jpg"
+                         alt="message user image">
+                  </a>
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    本獭窝恢复了每周二下午16:00清理窝中不活跃獭獭的功能，如果您的獭獭在周二下午之后不再说话了，请自行检查您的獭獭是否还在窝里，谢谢。<br/>之后可能会添加注册用户的獭獭不会被自动清理删除的功能。
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
                 <div class="direct-chat-msg">
                   <div class="direct-chat-info clearfix">
                     <span class="direct-chat-name pull-left">Bluefissure</span>
@@ -179,7 +161,26 @@
                   <img class="direct-chat-img" src="{% static "dist/img/bluefissure.jpg" %}" alt="message user image">
                   <!-- /.direct-chat-img -->
                   <div class="direct-chat-text">
-                    请将酷Q的HTTPAPI插件升级至<a href="https://github.com/richardchien/coolq-http-api/releases/tag/v4.14.1" target="_blank">4.14.1</a>版本使用服务，服务器禁止了老版本客户端的连接。
+                    请将酷Q的HTTPAPI插件升级至<a href="https://github.com/richardchien/coolq-http-api/releases/tag/v4.14.1"
+                                        target="_blank">4.14.1</a>版本使用服务，服务器禁止了老版本客户端的连接。
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <div class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name pull-left">
+                      <a href="http://botapi.dead-war.cn/" target="_blank">Windmourn</a>
+                    </span>
+                    <span class="direct-chat-timestamp pull-right">2019-3-12 20:47:26</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <a href="http://botapi.dead-war.cn/" target="_blank">
+                    <img class="direct-chat-img" src="https://i.loli.net/2019/03/12/5c87267f13817.jpg"
+                         alt="message user image">
+                  </a>
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text">
+                    请使用下载配置文件功能来使用本獭窝
                   </div>
                   <!-- /.direct-chat-text -->
                 </div>
@@ -194,7 +195,7 @@
                   <div class="direct-chat-text">
                     机器人数量达到上限后会停止新的机器人申请，可以参考取以下獭窝中领养獭獭（需要将链接地址进行对应替换）。
                     不同颜色表示：自动同意<span style="color:#FF9900">加群邀请</span>，<span style="color:#FF0099">好友邀请</span>，<span
-                      style="color:green">均同意</span>
+                          style="color:green">均同意</span>
                   </div>
                   <!-- /.direct-chat-text -->
                 </div>
@@ -208,7 +209,7 @@
                   <!-- /.direct-chat-img -->
                   <div class="direct-chat-text">
                     出现问题请<a href="http://wpa.qq.com/msgrd?v=3&uin=306401806&site=qq&menu=yes" target="_blank">联系獭爹</a>，或<a
-                      href="https://jq.qq.com/?_wv=1027&k=5L3hY4w" target="_blank">加入群聊</a>
+                          href="https://jq.qq.com/?_wv=1027&k=5L3hY4w" target="_blank">加入群聊</a>
                   </div>
                   <!-- /.direct-chat-text -->
                 </div>
@@ -244,7 +245,8 @@
             </div>
             <!--/.direct-chat -->
           </div>
-
+        </div>
+        <div class="col-md-6">
           <div class="card card-primary">
             <div class="card-header with-border">
               <h3 class="card-title">其他獭窝</h3>
@@ -254,25 +256,13 @@
               <ul class="products-list product-list-in-card">
                 <li class="item">
                   <div class="product-img">
-                    <img src="https://i.loli.net/2020/01/10/bWPpDq6QL3VmeMo.jpg" alt="猪窝">
+                    <img src="{% static "dist/img/bluefissure.jpg" %}" alt="Bluefissure">
                   </div>
                   <div class="product-info">
-                    <a href="https://tata.guomie.club/" class="product-title" target="_blank">猪窝 —— 果咩
-                      <span class="badge bg-green float-right">自建</span></a>
+                    <a href="https://xn--v9x.net/" class="product-title" target="_blank">FFXIV Toolkit CN —— Bluefissure
+                      <span class="badge bg-orange float-right">官方</span></a>
                     <span class="product-description">
-                          没有鸡
-                        </span>
-                  </div>
-                </li>
-                <li class="item">
-                  <div class="product-img">
-                    <img src="https://i.loli.net/2019/03/12/5c87267f13817.jpg" alt="风断苍">
-                  </div>
-                  <div class="product-info">
-                    <a href="http://botapi.dead-war.cn/" class="product-title" target="_blank">风断苍茫 —— 风断苍
-                      <span class="badge bg-green float-right">自建</span></a>
-                    <span class="product-description">
-                          还要说啥
+                          我只是个写代码的，懂个屁FFXIVBOT
                         </span>
                   </div>
                 </li>
@@ -301,6 +291,18 @@
                         </span>
                   </div>
                 </li>
+                <li class="item">
+                  <div class="product-img">
+                    <img src="https://i.loli.net/2020/01/10/bWPpDq6QL3VmeMo.jpg" alt="猪窝">
+                  </div>
+                  <div class="product-info">
+                    <a href="https://tata.guomie.club/" class="product-title" target="_blank">猪窝 —— 果咩
+                      <span class="badge bg-green float-right">自建</span></a>
+                    <span class="product-description">
+                          没有鸡
+                        </span>
+                  </div>
+                </li>
                 <!-- /.item -->
               </ul>
             </div>
@@ -315,6 +317,125 @@
         <!-- /.col -->
       </div>
     </div>
+    <div>
+      <div class="modal fade" id="before_add_bot">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title fa-pull-left">用户须知</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                                                                                                class="fa fa-close">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div id="popup-warning"></div>
+              <h5>请确认您能接受以下内容，并点击下方“我接受”按钮</h5><br>
+              <p>
+                1、本网站为
+                <a href="https://github.com/Bluefissure/FFXIVBOT" target="_blank">
+                  FFXIV Toolkit CN
+                </a>
+                的一个分支，功能上可能较
+                <a href="https://xn--v9x.net/" target="_blank">
+                  主窝
+                </a>
+                稍微落后并随时有可能停止维护。
+              </p>
+              <p>
+                2、本站在跟进主窝的大量更新的同时，自身也有大量自定义化内容，其中可能会有部分令人不适的功能，如有不适请勿使用。
+              </p>
+            </div>
+            <div class="modal-footer">
+              <div style="float: left">
+                邀请码：<input type="text" id="active_code">
+              </div>
+              <button type="button" class="btn btn-default" data-dismiss="modal">我拒绝</button>
+              <button type="button" class="btn btn-primary" onclick="accept_add_bot()">我接受</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="modal fade" id="add_bot">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title fa-pull-left">领养/更新机器人</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                                                                                                class="fa fa-close">&times;</span>
+              </button>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <div method="post" role="form">
+              <div class="modal-body">
+                <div id="popup">
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="botName">昵称(长度>2)</label>
+                      <input type="text" class="form-control" id="botName" placeholder="">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="botID">QQ账号</label>
+                      <input type="text" class="form-control" id="botID" placeholder="">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="ownerID">主人QQ</label>
+                      <input type="text" class="form-control" id="ownerID" placeholder="">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="accessToken">Access Token(长度>5)</label>
+                      <input type="text" class="form-control" id="accessToken" placeholder="" maxlength="16">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="tulingToken"><a href="http://www.tuling123.com/" target="_blank">Tuling</a>
+                        Token(留空使用共享图灵账号)</label>
+                      <input type="text" class="form-control" id="tulingToken" placeholder="">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="api_post_url">Http API Post URL(留空使用websocket)</label>
+                      <input type="text" class="form-control" id="api_post_url" placeholder="">
+                    </div>
+                  </div>
+                </div>
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" id="autoFriend"> 自动同意好友请求
+                  </label>
+                </div>
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" id="autoInvite"> 自动同意加群邀请
+                  </label>
+                </div>
+              </div>
+              <!-- /.card-body -->
+
+              <div class="modal-footer">
+                <button class="btn btn-primary" onclick="add_or_update_bot()">申请/更新</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
 
@@ -323,45 +444,106 @@
 
 {% block script %}
   <!-- jQuery 3 -->
-  <script src="{% static "plugins/jquery/jquery.min.js" %}"></script>
+  <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
   <!-- Bootstrap 3.3.7 -->
-  <script src="{% static "plugins/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+  <script src="https://cdn.bootcss.com/twitter-bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+  <!-- JQuery Cookie -->
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
   <!-- DataTables -->
-  <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
-  <script src="{% static "plugins/datatables-bs4/js/dataTables.bootstrap4.min.js" %}"></script>
+  <script src="https://cdn.bootcss.com/datatables/1.10.20/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.bootcss.com/datatables/1.10.20/js/dataTables.bootstrap4.min.js"></script>
   <!-- FastClick -->
-  <script src="{% static "plugins/fastclick/fastclick.js" %}"></script>
+  <script src="https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js"></script>
   <!-- AdminLTE App -->
-  <script src="{% static "dist/js/adminlte.min.js" %}"></script>
+  <script src="https://cdn.bootcss.com/admin-lte/3.0.4/js/adminlte.min.js"></script>
   <!-- AdminLTE for demo purposes -->
-  <script src="{% static "dist/js/demo.js" %}"></script>
+  <script src="https://cdn.bootcss.com/admin-lte/3.0.4/js/demo.min.js"></script>
   <!-- page script -->
   <script>
       $(function () {
           $('#example1').DataTable({
               "scrollX": false,
-              "autoWidth": true
+              "autoWidth": true,
+              "language": {
+                  "sProcessing": "处理中...",
+                  "sLengthMenu": "显示 _MENU_ 项结果",
+                  "sZeroRecords": "没有匹配结果",
+                  "sInfo": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+                  "sInfoEmpty": "显示第 0 至 0 项结果，共 0 项",
+                  "sInfoFiltered": "(由 _MAX_ 项结果过滤)",
+                  "sSearch": "搜索:",
+                  "sEmptyTable": "表中数据为空",
+                  "sLoadingRecords": "载入中...",
+                  "sInfoThousands": ",",
+                  "oPaginate": {
+                      "sFirst": "首页",
+                      "sPrevious": "上页",
+                      "sNext": "下页",
+                      "sLast": "末页"
+                  },
+                  // 排序方式
+                  "oAria": {
+                      "sSortAscending": ": 以升序排列此列",
+                      "sSortDescending": ": 以降序排列此列"
+                  }
+              }
           });
-          $('#example2').DataTable({
-              'paging': true,
-              'lengthChange': false,
-              'searching': false,
-              'ordering': true,
-              'info': true,
-              'autoWidth': false
-          })
+          $('#add_bot').on('show.bs.modal', function () {
+              $('.form-group input').val("");
+              $('#popup .alert').remove();
+              $(this).css('display', 'block');
+              let modalHeight=$(window).height() / 2 - $('#add_bot .modal-dialog').height() / 2;
+              if (modalHeight >= 0) {
+                  $(this).find('.modal-dialog').css({
+                      'margin-top': modalHeight
+                  });
+              }
+          });
+          $('#before_add_bot').on('show.bs.modal', function () {
+              $('#popup-warning .alert').remove();
+              $(this).css('display', 'block');
+              let modalHeight=$(window).height() / 2 - $('#before_add_bot .modal-dialog').height() / 2;
+              if (modalHeight >= 0) {
+                  $(this).find('.modal-dialog').css({
+                      'margin-top': modalHeight
+                  });
+              }
+          });
       });
 
+      function switch_r18(id) {
+          let token = prompt("请输入Token:");
+          $.ajax({
+              type: 'POST',
+              url: '',
+              async: false,
+              data: {"optype": "switch_r18", "token": token, "id": id, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+              success: function (data) {
+                  if (data.response !== "success") {
+                      if (data.response === "error") {
+                          alert(data.msg);
+                      } else {
+                          alert(data.response);
+                          console.log(data);
+                      }
+                  } else {
+                      alert("操作成功！");
+                      location.reload();
+                  }
+              },
+          });
+      }
+
       function switch_public(id) {
-          var token = prompt("请输入Token:");
+          let token = prompt("请输入Token:");
           $.ajax({
               type: 'POST',
               url: '',
               async: false,
               data: {"optype": "switch_public", "token": token, "id": id, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
               success: function (data) {
-                  if (data.response != "success") {
-                      if (data.response == "error") {
+                  if (data.response !== "success") {
+                      if (data.response === "error") {
                           alert(data.msg);
                       } else {
                           alert(data.response);
@@ -376,15 +558,15 @@
       }
 
       function del_bot(id) {
-          var token = prompt("请输入Token:");
+          let token = prompt("请输入Token:");
           $.ajax({
               type: 'POST',
               url: '',
               async: false,
               data: {"optype": "del_bot", "token": token, "id": id, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
               success: function (data) {
-                  if (data.response != "success") {
-                      if (data.response == "error") {
+                  if (data.response !== "success") {
+                      if (data.response === "error") {
                           alert(data.msg);
                       } else {
                           alert(data.response);
@@ -398,47 +580,48 @@
           });
       }
 
-      function download_conf(id) {
-          var token = prompt("请输入Token:");
-          var request = new XMLHttpRequest();
+      function download_conf(id, token) {
+          if (token == null)
+              token = prompt("请输入Token:");
+          let request = new XMLHttpRequest();
           request.open('POST', '', true);
           request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-          request.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');  
+          request.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
           request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
           request.responseType = 'blob';
-          request.onload = function(e) {
+          request.onload = function (e) {
               if (this.status === 200) {
-                var blob = this.response;
-                var fileName = "config.json";
-                console.log(blob);
-                if(window.navigator.msSaveOrOpenBlob) {
-                  window.navigator.msSaveBlob(blob, fileName);
-                } else {
-                  var downloadLink = window.document.createElement('a');
-                  var contentTypeHeader = request.getResponseHeader("Content-Type");
-                  downloadLink.href = window.URL.createObjectURL(new Blob([blob], { type: contentTypeHeader }));
-                  var contentDispositionHeader = request.getResponseHeader("Content-Disposition");
-                  var ma = contentDispositionHeader.match(/filename="(\d+.json)"/);
-                  if (ma != null) fileName = ma[1];
-                  downloadLink.download = fileName;
-                  document.body.appendChild(downloadLink);
-                  downloadLink.click();
-                  document.body.removeChild(downloadLink);
-               }
-            }
+                  let blob = this.response;
+                  let fileName = "config.json";
+                  console.log(blob);
+                  if (window.navigator.msSaveOrOpenBlob) {
+                      window.navigator.msSaveBlob(blob, fileName);
+                  } else {
+                      let downloadLink = window.document.createElement('a');
+                      let contentTypeHeader = request.getResponseHeader("Content-Type");
+                      downloadLink.href = window.URL.createObjectURL(new Blob([blob], {type: contentTypeHeader}));
+                      let contentDispositionHeader = request.getResponseHeader("Content-Disposition");
+                      let ma = contentDispositionHeader.match(/filename="(\d+.json)"/);
+                      if (ma != null) fileName = ma[1];
+                      downloadLink.download = fileName;
+                      document.body.appendChild(downloadLink);
+                      downloadLink.click();
+                      document.body.removeChild(downloadLink);
+                  }
+              }
           };
-          request.send("optype=download_conf&token="+token+"&id="+id+'&csrfmiddlewaretoken='+'{{ csrf_token }}');
+          request.send("optype=download_conf&token=" + token + "&id=" + id + '&csrfmiddlewaretoken=' + '{{ csrf_token }}');
       }
 
       function add_or_update_bot() {
-          var botName = document.getElementById("botName").value;
-          var botID = document.getElementById("botID").value;
-          var ownerID = document.getElementById("ownerID").value;
-          var accessToken = document.getElementById("accessToken").value;
-          var tulingToken = document.getElementById("tulingToken").value;
-          var api_post_url = document.getElementById("api_post_url").value;
-          var autoFriend = document.getElementById("autoFriend").checked;
-          var autoInvite = document.getElementById("autoInvite").checked;
+          let botName = document.getElementById("botName").value;
+          let botID = document.getElementById("botID").value;
+          let ownerID = document.getElementById("ownerID").value;
+          let accessToken = document.getElementById("accessToken").value;
+          let tulingToken = document.getElementById("tulingToken").value;
+          let api_post_url = document.getElementById("api_post_url").value;
+          let autoFriend = document.getElementById("autoFriend").checked;
+          let autoInvite = document.getElementById("autoInvite").checked;
           $.ajax({
               type: 'POST',
               url: '',
@@ -456,19 +639,67 @@
                   'csrfmiddlewaretoken': '{{ csrf_token }}'
               },
               success: function (data) {
-                  if (data.response != "success") {
-                      if (data.response == "error") {
-                          alert(data.msg);
+                  if (data.response !== "success") {
+                      if (data.response === "error") {
+                          $('#popup').append("<div class=\"alert alert-danger alert-dismissable fade show\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>" + data.msg + "</div>");
                       } else {
-                          alert(data.response);
+                          $('#popup').append("<div class=\"alert alert-danger alert-dismissable fade show\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>" + data.response + "</div>");
                           console.log(data);
                       }
                   } else {
-                      prompt(data.msg, data.token);
-                      location.reload();
+                      $('#popup').append("<div class=\"alert alert-success alert-dismissable fade show\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>" + data.msg + data.token + "<br>是否立即<a href=\"#\" class=\"alert-link\" onclick=\"download_conf(" + data.id + ", " + data.token + ")\">下载配置文件</a>？</div>");
                   }
               },
           });
+      }
+
+      function accept_add_bot() {
+	        let bots_length = {{ bots|length }};
+          let failed_count = $.cookie('failed_count');
+          if (failed_count == null) failed_count = 0;
+          if (failed_count < 5) {
+              let active_code = $('#active_code').val();
+              let is_valid_code = active_code.match(/^\w{8}(-\w{4}){3}-\w{12}$/);
+              if (is_valid_code !== null) {
+                  $.ajax({
+                      type: 'POST',
+                      url: '',
+                      async: false,
+                      data: {
+                          "optype": "active_code",
+                          "active_code": active_code,
+                          'csrfmiddlewaretoken': '{{ csrf_token }}'
+                      },
+                      success: function (data) {
+                          if (data.response !== "success") {
+                              if (data.response === "error") {
+                                  $.cookie('failed_count', failed_count + 1, {expires: getNextDate()});
+                              }
+                          } else {
+                              is_valid_code = data.is_used;
+                              $.removeCookie('failed_count');
+                          }
+                      },
+                  })
+              }
+              if (bots_length < 150 || is_valid_code) {
+                  $('#before_add_bot').modal("hide");
+                  setTimeout(function () {
+                      $('#add_bot').modal("show");
+                  }, 500);
+              } else {
+                  $('#popup-warning').append("<div class=\"alert alert-danger alert-dismissable fade show\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>非常抱歉，本獭窝已满，请将页面滚动到下方其他獭窝处选择其他未满的獭窝</div>");
+              }
+          }
+      }
+
+      function getNextDate() {
+          let date = new Date();
+          let year = date.getFullYear();
+          let month = date.getMonth();
+          let day = date.getDay();
+
+          return new Date(year, month, day + 1, 0, 0, 0, 0);
       }
   </script>
 {% endblock %}

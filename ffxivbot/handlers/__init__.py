@@ -13,6 +13,7 @@ commands = {
     "/donate": "援助作者",
     "/random": "掷骰子",
     "/chp": "彩虹屁",
+    "/du":"毒鸡汤",
     "/anime": '以图搜番（"/anime 图片"）',
     "/gif": '生成沙雕图（"/gif help"）',
     "/dice": 'DnD掷骰子（"/dice 3d12"）',
@@ -39,6 +40,7 @@ commands = {
     "/shorten": "微博短链",
     "/mxh": '梅溪湖cp短打生成器（"/mxh 海德林 佐迪亚克"）',
     "/hh": '光之收藏家幻化推荐("/hh help")',
+    "/yiff": "What does the fox say?",
     "/luck": "浅草寺求签",
     "/abv": "Bilibili av/BV号互转",
 }
@@ -89,6 +91,7 @@ alter_commands = {
     "/信念": "/fsx 信念",
     "/坚韧": "/fsx 坚韧",
     "/直击": "/fsx 直击",
+    "/暖暖":"/nuannuan",
     "/天气": "/weather",
     "/宝图": "/treasure",
     "/nuannuan": "/nuannuan text",
@@ -106,12 +109,14 @@ from .QQCommand_donate import QQCommand_donate
 from .QQCommand_anime import QQCommand_anime
 from .QQCommand_gate import QQCommand_gate
 from .QQCommand_chp import QQCommand_chp
+from .QQCommand_du import QQCommand_du
 from .QQCommand_random import QQCommand_random
 from .QQCommand_weather import QQCommand_weather
 from .QQCommand_gif import QQCommand_gif
 from .QQCommand_dps import QQCommand_dps
 from .QQCommand_dice import QQCommand_dice
 from .QQCommand_hso import QQCommand_hso
+from .QQCommand_yiff import QQCommand_yiff
 from .QQCommand_raid import QQCommand_raid
 from .QQCommand_bot import QQCommand_bot
 from .QQCommand_pixiv import QQCommand_pixiv
@@ -124,13 +129,13 @@ from .QQCommand_tex import QQCommand_tex
 from .QQCommand_waifu import QQCommand_waifu
 from .QQCommand_quest import QQCommand_quest
 from .QQCommand_share import QQCommand_share
-from .QQCommand_trash import QQCommand_trash
+# from .QQCommand_trash import QQCommand_trash
 from .QQCommand_shorten import QQCommand_shorten
 from .QQCommand_ifttt import QQCommand_ifttt
 from .QQCommand_fsx import QQCommand_fsx
 
 # from .QQCommand_joke import QQCommand_joke
-# from .QQCommand_mxh import QQCommand_mxh
+from .QQCommand_mxh import QQCommand_mxh
 from .QQCommand_treasure import QQCommand_treasure
 from .QQCommand_hh import QQCommand_hh
 from .QQCommand_luck import QQCommand_luck

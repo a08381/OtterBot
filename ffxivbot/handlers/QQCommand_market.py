@@ -50,20 +50,40 @@ def get_item_id(item_name):
     r = requests.get(url, timeout=3)
     j = r.json()
     if len(j["Results"]) > 0:
-        return j["Results"][0]["ID"]
-    return -1
+        return j["Results"][0]["Name"], j["Results"][0]["ID"]
+    return "", -1
+
+
+def get_intl_item_id(item_name, name_lang=""):
+    url = "https://xivapi.com/search?indexes=Item&string=" + item_name
+    if name_lang:
+        url = url + "&language=" + name_lang
+    r = requests.get(url, timeout=3)
+    j = r.json()
+    if len(j["Results"]) > 0:
+        return j["Results"][0]["Name"], j["Results"][0]["ID"]
+    return "", -1
 
 
 def get_market_data(server_name, item_name, hq=False):
-    item_id = get_item_id(item_name)
+    new_item_name, item_id = get_item_id(item_name)
     if item_id < 0:
-        msg = '所查询物品"{}"不存在'.format(item_name)
-        return msg
+        item_name = item_name.replace("_", " ")
+        name_lang = ""
+        for lang in ["ja", "fr", "de"]:
+            if item_name.endswith("|{}".format(lang)):
+                item_name = item_name.replace("|{}".format(lang), "")
+                name_lang = lang
+                break
+        new_item_name, item_id = get_intl_item_id(item_name, name_lang)
+        if item_id < 0:
+            msg = '所查询物品"{}"不存在'.format(item_name)
+            return msg
     url = "https://universalis.app/api/{}/{}".format(server_name, item_id)
     print("market url:{}".format(url))
     r = requests.get(url, timeout=3)
     j = r.json()
-    msg = "{} 的 {}{} 数据如下：\n".format(server_name, item_name, "(HQ)" if hq else "")
+    msg = "{} 的 {}{} 数据如下：\n".format(server_name, new_item_name, "(HQ)" if hq else "")
     listing_cnt = 0
     for listing in j["listings"]:
         if hq and not listing["hq"]:
@@ -133,11 +153,11 @@ Powered by https://universalis.app"""
         return msg
     elif command_seg[0].lower() == "upload":
         msg = """您可以使用以下几种方式上传交易数据：
+0.如果您使用咖啡整合的ACT，可以启用抹茶插件中的Universalis集成功能 http://url.cn/a9xaUIKs 
 1.如果您使用过国际服的 XIVLauncher，您可以使用国服支持的Dalamud版本 https://url.cn/6L7nD0gF
-2.如果您使用过ACT，您可以加载ACT插件 UniversalisPlugin
-3.如果您想不依赖于其他程序，您可以使用 UniversalisStandalone
+2.如果您使用过ACT，您可以加载ACT插件 UniversalisPlugin https://url.cn/TEY1QKKV
+3.如果您想不依赖于其他程序，您可以使用 UniversalisStandalone https://url.cn/TEY1QKKV
 4.如果您使用过Teamcraft客户端，您也可以使用其进行上传
-其中 2. 3. 两点所需软件请于 https://url.cn/TEY1QKKV 下载 UniversalisApp.zip
 Powered by https://universalis.app"""
     return msg
 
@@ -166,3 +186,4 @@ def QQCommand_market(*args, **kwargs):
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
         traceback.print_exc()
+    return action_list

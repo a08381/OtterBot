@@ -223,8 +223,8 @@ class QQBot(models.Model):
     auto_accept_invite = models.BooleanField(default=False)
     tuling_token = models.CharField(max_length=32, default="", blank=True)
     saucenao_token = models.CharField(max_length=32, default="", blank=True)
-    api_channel_name = models.CharField(max_length=32, default="", blank=True)
-    event_channel_name = models.CharField(max_length=32, default="", blank=True)
+    api_channel_name = models.CharField(max_length=128, default="", blank=True)
+    event_channel_name = models.CharField(max_length=128, default="", blank=True)
     api_post_url = models.CharField(max_length=64, default="", blank=True)
     group_list = models.TextField(default="[]")
     plugin_status = models.TextField(default="{}")
@@ -552,7 +552,7 @@ class IFTTTChannel(models.Model):
     )
     members = models.ManyToManyField(QQUser, blank=True)
     last_push_time = models.BigIntegerField(default=0)
-    callback_link = models.CharField(default="", max_length=256)
+    callback_link = models.CharField(default="", max_length=256, blank=True, null=True)
 
     def __str__(self):
         return self.name

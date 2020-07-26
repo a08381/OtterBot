@@ -95,6 +95,7 @@ alter_commands = {
     "/天气": "/weather",
     "/宝图": "/treasure",
     "/nuannuan": "/nuannuan text",
+    "/nn":"/nuannuan",
     "/mitem": "/market item",
 }
 

@@ -748,6 +748,8 @@ class PikaConsumer(object):
                     for (k, v) in handlers.commands.items():
                         command_enable = k != "/yiff"
                         if command_enable and group and group_commands:
+                            command_enable = group_commands.get(k, "enable") == "enable"
+                        if command_enable:
                             msg += "{}: {}\n".format(k, v)
 
                     args = msg.splitlines(keepends=True)

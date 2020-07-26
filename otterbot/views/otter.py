@@ -1,17 +1,18 @@
 from django.http import HttpResponse, JsonResponse
 
-from FFXIV import settings
-from ffxivbot.models import *
+from Otter import settings
+from otterbot.models import *
 from .ren2res import ren2res
 import json, os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
+OTTERBOT_ROOT = os.environ.get("OTTERBOT_ROOT", BASE_DIR)
 CONFIG_PATH = os.environ.get(
-    "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
+    "OTTERBOT_CONFIG", os.path.join(OTTERBOT_ROOT, "otterbot/config.json")
 )
 
-def tata(req):
+
+def otter(req):
     if req.is_ajax() and req.method == "POST":
         res_dict = {"response": "No response."}
         optype = req.POST.get("optype")
@@ -59,7 +60,9 @@ def tata(req):
                 bot.save()
                 res_dict = {
                     "response": "success",
-                    "msg": "{}({})".format(bot.name, bot.user_id) + ("添加" if bot_created else "更新") + "成功，Token为:",
+                    "msg": "{}({})".format(bot.name, bot.user_id)
+                    + ("添加" if bot_created else "更新")
+                    + "成功，Token为:",
                     "token": bot.access_token,
                 }
             return JsonResponse(res_dict)
@@ -160,7 +163,7 @@ def tata(req):
             bb["user_id"] = bot.user_id
         else:
             mid = len(bot.user_id) // 2
-            user_id = bot.user_id[: mid - 2] + "*" * 4 + bot.user_id[mid + 2:]
+            user_id = bot.user_id[: mid - 2] + "*" * 4 + bot.user_id[mid + 2 :]
             bb["user_id"] = user_id
         bb["group_num"] = group_num
         bb["friend_num"] = friend_num
@@ -172,4 +175,4 @@ def tata(req):
         bb["autoinvite"] = bot.auto_accept_invite
         bb["autofriend"] = bot.auto_accept_friend
         bot_list.append(bb)
-    return ren2res("tata.html", req, {"bots": bot_list})
+    return ren2res("otter.html", req, {"bots": bot_list})

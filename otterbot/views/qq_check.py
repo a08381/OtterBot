@@ -3,9 +3,9 @@ import time
 from django.contrib import auth
 from django.http import HttpResponseRedirect
 
-from FFXIV import settings
-from ffxivbot.models import QQUser
-from ffxivbot.oauth_client import OAuthQQ
+from Otter import settings
+from otterbot.models import QQUser
+from otterbot.oauth_client import OAuthQQ
 
 
 def qq_check(req):

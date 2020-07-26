@@ -8,16 +8,15 @@ import traceback
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from FFXIV import settings
-from ffxivbot.consumers import PikaPublisher
-from ffxivbot.models import QQBot, QQGroup
+from Otter import settings
+from otterbot.consumers import PikaPublisher
+from otterbot.models import QQBot, QQGroup
 
 
-FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", settings.BASE_DIR)
+OTTERBOT_ROOT = os.environ.get("OTTERBOT_ROOT", settings.BASE_DIR)
 CONFIG_PATH = os.environ.get(
-    "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
+    "OTTERBOT_CONFIG", os.path.join(OTTERBOT_ROOT, "otterbot/config.json")
 )
-pub = PikaPublisher()
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
 
@@ -25,6 +24,7 @@ LOGGER = logging.getLogger(__name__)
 @csrf_exempt
 def wechatpost(req):
     try:
+        pub = PikaPublisher()
         print("wechat request headers:")
         print(req.META)
         receive = json.loads(req.body.decode())
@@ -46,10 +46,10 @@ def wechatpost(req):
         else:
             token = config.get("WECHAT_TOKEN", "")
             received_token = receive["data"]["token"]
-            if (not token or token != received_token):
+            if not token or token != received_token:
                 print("WechatBot {}:{} authencation failed".format(bot, self_id))
                 return HttpResponse("Wrong TOKEN", status=500)
-            
+
             if "data" in receive.keys():
                 bot.event_time = int(time.time())
                 bot.save(update_fields=["event_time"])
@@ -90,12 +90,21 @@ def wechatpost(req):
                                 )
                                 mentions = receive["data"]["payload"].get("mention", [])
                                 print("mentions:{}".format(mentions))
-                                print("matched:{}".format(mentions and mentions[0] == bot.wechat_id))
+                                print(
+                                    "matched:{}".format(
+                                        mentions and mentions[0] == bot.wechat_id
+                                    )
+                                )
                                 receive["self_wechat_id"] = bot.wechat_id
-                                push_to_mq = (mentions and mentions[0] == bot.wechat_id) or (
-                                                        (group.repeat_ban > 0)
-                                                        or (group.repeat_length > 1 and group.repeat_prob > 0)
-                                                )
+                                push_to_mq = (
+                                    mentions and mentions[0] == bot.wechat_id
+                                ) or (
+                                    (group.repeat_ban > 0)
+                                    or (
+                                        group.repeat_length > 1
+                                        and group.repeat_prob > 0
+                                    )
+                                )
                                 print("push_to_mq:{}".format(push_to_mq))
                                 # push_to_mq = "[CQ:at,qq={}]".format(self_id) in receive["message"]
                             if push_to_mq:
@@ -104,12 +113,6 @@ def wechatpost(req):
                                 pub.send(text_data, priority)
                                 return HttpResponse("Request sent to MQ", status=200)
                         return HttpResponse("Request message omitted", status=200)
-
-                    # if receive["post_type"] == "request" or receive["post_type"] == "event":
-                    #     priority = 3
-                    #     text_data = json.dumps(receive)
-                    #     pub.send(text_data, priority)
-                    #     return HttpResponse("Request sent to MQ", status=200)
 
                 except Exception as e:
                     traceback.print_exc()

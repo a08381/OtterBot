@@ -19,29 +19,29 @@ from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.conf import settings
 from django.views.decorators.cache import cache_page
-
+from otterbot.views import *
 from ffxivbot.views import *
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', tata),
-    path('tata/', tata),
-    path('quest/', quest),
-    path('quest/tooltip/', quest_tooltip),
-    path('api/', api),
-    path('http/', qqpost),
-    path('wechat/message', wechatpost),
-    path('image/', image),
+    path("admin/", admin.site.urls),
+    path("", otter),
+    path("otter/", otter),
+    path("quest/", quest),
+    path("quest/tooltip/", quest_tooltip),
+    # path("api/", api),
+    path("http/", qqpost),
+    path("wechat/message", wechatpost),
+    path("image/", image),
     # path('hunt/', cache_page(60 * 2)()),
-    path('hunt/', hunt),
-    url(r'^oauth/qq/login/$', qq_login, name='qq_login'),
-    url(r'^api/qqcallback', qq_check, name='qq_check'),
+    path("hunt/", hunt),
+    url(r"^oauth/qq/login/$", qq_login, name="qq_login"),
+    url(r"^api/qqcallback", qq_check, name="qq_check"),
     # url(r'^oauth/qq/check/$', qq_check, name='qq_check'),
     # url(r'^oauth/bind/account/$', bind_account, name='bind_account'),
-    url(r'^login/', login),
-    url(r'^register/', register),
-    url(r'^logout/', logout),
+    url(r"^login/", login),
+    url(r"^register/", register),
+    url(r"^logout/", logout),
 ]
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()

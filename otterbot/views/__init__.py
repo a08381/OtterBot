@@ -1,4 +1,4 @@
-from .tata import tata
+from .otter import otter
 from .quest import quest
 from .quest_tooltip import quest_tooltip
 from .api import api

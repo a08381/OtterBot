@@ -6,67 +6,6 @@ import json
 import time
 
 # Create your models here.
-
-
-class WeiboUser(models.Model):
-    name = models.CharField(default="", blank=True, max_length=16, unique=True)
-    uid = models.CharField(default="", max_length=16)
-    containerid = models.CharField(default="", max_length=32)
-    last_update_time = models.BigIntegerField(default=0)
-
-    def __str__(self):
-        return self.name
-
-
-class LiveUser(models.Model):
-    room_id = models.CharField(max_length=16, default="", blank=True)
-    name = models.CharField(max_length=64)
-    platform = models.CharField(max_length=16, default="bilibili")
-    info = models.TextField(default="{}")
-    status = models.CharField(max_length=32, default="default")
-    last_update_time = models.BigIntegerField(default=0)
-
-    def __str__(self):
-        return "{}#{}:{}".format(self.platform, self.room_id, self.name)
-
-    def get_share(self, mode="json"):
-        jinfo = json.loads(self.info)
-        if self.platform == "bilibili":
-            res_data = {
-                "url":"https://live.bilibili.com/{}".format(self.room_id),
-                "title":jinfo.get("title", "{}的直播".format(self.name)),
-                "content":"{}开始在{}直播啦~".format(self.name, self.platform),
-                "image":jinfo.get("image", ""),
-            }
-        elif self.platform == "douyu":
-            content = "{}开始在{}直播啦~".format(self.name, self.platform)
-            res_data = {
-                "url":"https://www.douyu.com/{}".format(self.room_id),
-                "title":jinfo.get("title", "{}的直播".format(self.name)),
-                "content":content,
-                "image":jinfo.get("image", ""),
-            }
-        else:
-            res_data = {
-                "url":"https://jq.qq.com/?_wv=1027&k=5L3hY4w",
-                "title":"NotImplementedPlatform",
-                "content":"欢迎加群660557003反映问题",
-                "image":"https://xn--v9x.net/static/dist/img/tata.jpg",
-            }
-        if mode=="text":
-            res_data = "[[CQ:share,url={},title={},content={},image={}]]".format(
-                res_data["url"],
-                res_data["title"],
-                res_data["content"],
-                res_data["image"])
-        return res_data
-
-    def is_live(self):
-        jinfo = json.loads(self.info)
-        return jinfo.get("status", "offline").lower() == "live"
-
-
-
 class QQGroup(models.Model):
     group_id = models.CharField(primary_key=True, max_length=64, unique=True)
     welcome_msg = models.TextField(default="", blank=True)
@@ -80,29 +19,11 @@ class QQGroup(models.Model):
     last_reply_time = models.BigIntegerField(default=0)
     member_list = models.TextField(default="[]")
     registered = models.BooleanField(default=False)
-    subscription = models.ManyToManyField(
-        WeiboUser, related_name="subscribed_by", blank=True
-    )
-    live_subscription = models.ManyToManyField(
-        LiveUser, related_name="subscribed_by", blank=True
-    )
-    pushed_live = models.ManyToManyField(LiveUser, related_name="pushed_group", blank=True)
     commands = models.TextField(default="{}")
     api = models.BooleanField(default=False)
 
     def __str__(self):
         return self.group_id
-
-
-class WeiboTile(models.Model):
-    itemid = models.CharField(default="", max_length=128, unique=True)
-    owner = models.ForeignKey(WeiboUser, on_delete=models.CASCADE, related_name="tile")
-    content = models.TextField(default="{}")
-    crawled_time = models.BigIntegerField(default=0)
-    pushed_group = models.ManyToManyField(QQGroup, related_name="pushed_weibo")
-
-    def __str__(self):
-        return self.itemid
 
 
 class CustomReply(models.Model):
@@ -142,44 +63,6 @@ class Revenge(models.Model):
     ban_time = models.IntegerField(default=0)
 
 
-class Quest(models.Model):
-    quest_id = models.IntegerField(primary_key=True)
-    name = models.CharField(default="", max_length=64, blank=True)
-    cn_name = models.CharField(default="", max_length=64, blank=True)
-
-    def __str__(self):
-        return str(self.name)
-
-
-class Boss(models.Model):
-    boss_id = models.IntegerField(primary_key=True)
-    quest = models.ForeignKey(Quest, on_delete=models.CASCADE)
-    name = models.CharField(default="", max_length=64, blank=True)
-    cn_name = models.CharField(default="", max_length=64, blank=True)
-    nickname = models.TextField(default="{}")
-    add_time = models.BigIntegerField(default=0)
-    cn_add_time = models.BigIntegerField(default=0)
-    cn_offset = models.IntegerField(default=0)
-    parsed_days = models.IntegerField(default=0)
-    frozen = models.BooleanField(default=False)
-    patch = models.IntegerField(default=0)
-    savage = models.IntegerField(default=100)   # 100 for normal; 101 for savage
-    global_server = models.IntegerField(default=3) # 3 for boss after 5.0, 1 for boss before 5.0
-    cn_server = models.IntegerField(default=5) # 5 for boss after 5.0, 3 for boss before 5.0
-
-    def __str__(self):
-        return str(self.name)
-
-
-class Job(models.Model):
-    name = models.CharField(default="", max_length=64, blank=True)
-    cn_name = models.CharField(default="", max_length=64, blank=True)
-    nickname = models.TextField(default="{}")
-
-    def __str__(self):
-        return str(self.name)
-
-
 class Vote(models.Model):
     group = models.ForeignKey(QQGroup, on_delete=models.CASCADE)
     name = models.CharField(max_length=64)
@@ -215,34 +98,12 @@ class QQBot(models.Model):
     r18 = models.BooleanField(default=False)
     disconnections = models.TextField(default="[]")
     disconnect_time = models.BigIntegerField(default=0)
-    command_stat = models.TextField(default="{}")
+    commands = models.TextField(default="{}")
     share_banned = models.BooleanField(default=False)
     img_banned = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
-
-
-class PlotQuest(models.Model):
-    name = models.CharField(max_length=128)
-    tooltip_url = models.TextField(default="", blank=True)
-    tooltip_html = models.TextField(default="", blank=True)
-    pre_quests = models.ManyToManyField(
-        "self", blank=True, symmetrical=False, related_name="suf_quests"
-    )
-    language_names = models.TextField(default="{}", blank=True)
-    endpoint = models.BooleanField(default=False)
-    endpoint_desc = models.CharField(max_length=64, default="", blank=True)
-    quest_type = models.IntegerField(default=0) # 0:nothing 3:main-scenario 8:special 1,10:other
-
-    def __str__(self):
-        return self.name
-
-    def is_main_scenario(self):
-        return self.quest_type == 3
-
-    def is_special(self):
-        return self.quest_type == 8
 
 
 class Comment(models.Model):
@@ -257,17 +118,6 @@ class Comment(models.Model):
         return self.content[:10]
 
 
-class Server(models.Model):
-    name = models.CharField(max_length=16)
-    areaId = models.IntegerField(default=1)
-    groupId = models.IntegerField(default=25)
-    alter_names = models.TextField(default="[]")
-    worldId = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.name
-
-
 class SorryGIF(models.Model):
     name = models.CharField(max_length=16)
     api_name = models.CharField(max_length=32)
@@ -278,7 +128,9 @@ class SorryGIF(models.Model):
 
 
 class QQUser(models.Model):
-    dbuser = models.OneToOneField(User, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="qquser")
+    dbuser = models.OneToOneField(
+        User, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="qquser"
+    )
     user_id = models.CharField(max_length=64, unique=True)
     bot_token = models.CharField(max_length=16, blank=True)
     able_to_upload_image = models.BooleanField(default=True)
@@ -303,31 +155,6 @@ class QQUser(models.Model):
 class HsoAlterName(models.Model):
     name = models.CharField(max_length=32, unique=True, default="")
     key = models.CharField(max_length=64, default="")
-
-    def __str__(self):
-        return self.name
-
-
-class Weather(models.Model):
-    id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=32, default="")
-
-    def __str__(self):
-        return self.name
-
-
-class WeatherRate(models.Model):
-    id = models.IntegerField(primary_key=True)
-    rate = models.TextField(default="[]")
-
-
-class Territory(models.Model):
-    name = models.CharField(max_length=32, default="")
-    nickname = models.TextField(default="[]")
-    weather_rate = models.ForeignKey(
-        WeatherRate, blank=True, null=True, on_delete=models.CASCADE
-    )
-    mapid = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -426,16 +253,6 @@ class Lottery(models.Model):
         return msg
 
 
-class ContentFinderItem(models.Model):
-    id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=64, default="")
-    nickname = models.TextField(default="{}")
-    guide = models.TextField(default="")
-
-    def __str__(self):
-        return self.name
-
-
 class CommandLog(models.Model):
     time = models.BigIntegerField(default=0)
     command = models.CharField(max_length=32)
@@ -445,95 +262,21 @@ class CommandLog(models.Model):
     group_id = models.CharField(max_length=64)
 
 
-class HuntGroup(models.Model):
-    name = models.CharField(default="", max_length=64)
-    group = models.ForeignKey(QQGroup, on_delete=models.CASCADE, related_name="hunt_group")
-    server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name="hunt_group")
-    moderator = models.ManyToManyField(QQUser, related_name="managed_hunt_group", blank=True)
-    servermark = models.CharField(default="", max_length=16, blank=True, null=True)
-    remark = models.CharField(default="", max_length=64, blank=True, null=True)
-    public = models.BooleanField(default=False)
-    def __str__(self):
-        return self.name if self.name else "{}-{}".format(self.group, self.server)
-
-
-class Monster(models.Model):
-    name = models.CharField(default="", blank=True, max_length=32, unique=True)
-    cn_name = models.CharField(default="", blank=True, max_length=32)
-    territory = models.ForeignKey(Territory, on_delete=models.CASCADE, related_name="hunt_monster")
-    rank = models.CharField(default="A", max_length=5)  # enum: "A", "B", "S", "Fate"
-    spawn_cooldown = models.IntegerField(default=0)
-    first_spawn_cooldown = models.IntegerField(default=0)
-    pop_cooldown = models.IntegerField(default=0)
-    first_pop_cooldown = models.IntegerField(default=0)
-    info = models.CharField(default="", max_length=128)
-    status = models.TextField(default="{}")
-
-    def spawn_cd_hour(self):
-        return self.spawn_cooldown // 3600
-
-    def pop_cd_hour(self):
-        return self.pop_cooldown // 3600
-
-    def __str__(self):
-        return self.cn_name if self.cn_name else self.name
-
-
-class HuntLog(models.Model):
-    monster = models.ForeignKey(Monster, on_delete=models.CASCADE, related_name="hunt_log", blank=True, null=True)
-    hunt_group = models.ForeignKey(HuntGroup, on_delete=models.CASCADE, related_name="hunt_log")
-    server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name="hunt_log")
-    log_type = models.CharField(default="", max_length=16)
-    time = models.BigIntegerField(default=0)
-
-    def __str__(self):
-        return "{}-{}".format(self.server, self.monster)
-
-    def get_info(self):
-        return "HuntLog#{}: {}-{} {}".format(self.id, self.server, self.monster, self.log_type)
-
-
-## class TelegramChannel(models.Model):
-##     name = models.CharField(default="", max_length=64)
-##     group = models.ManyToManyField(QQGroup, null=True, blank=True, related_name="tele_channel")
-##     last_push_time = models.BigIntegerField(default=0)
-##
-##     def __str__(self):
-##         return self.name
-
-
 class IFTTTChannel(models.Model):
     name = models.CharField(default="", max_length=32)
-    group = models.ForeignKey(QQGroup, null=True, blank=True, related_name="ifttt_channel", on_delete=models.CASCADE)
+    group = models.ForeignKey(
+        QQGroup,
+        null=True,
+        blank=True,
+        related_name="ifttt_channel",
+        on_delete=models.CASCADE,
+    )
     members = models.ManyToManyField(QQUser, blank=True)
     last_push_time = models.BigIntegerField(default=0)
     callback_link = models.CharField(default="", max_length=256)
 
     def __str__(self):
         return self.name
-
-
-
-class TreasureMap(models.Model):
-    territory = models.ForeignKey(Territory, blank=True, null=True, on_delete=models.CASCADE)
-    position = models.TextField(default="[0, 0]")
-    rank = models.CharField(max_length=8, default="")
-    number = models.IntegerField(default=0)
-    uri = models.TextField(default="")
-
-    def __str__(self):
-        return "{}#{}".format(self.territory, self.number)
-
-
-
-class Screen(models.Model):
-    name = models.CharField(default="",max_length=64,blank=True)
-    nickname = models.TextField(default="{}")
-    classname = models.CharField(default="",max_length=64,blank=True)
-    
-    def __str__(self):
-        return str(self.name)
-
 
 
 class LuckData(models.Model):

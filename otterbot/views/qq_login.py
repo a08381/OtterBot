@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect
 
-from FFXIV import settings
-from ffxivbot.oauth_client import OAuthQQ
+from Otter import settings
+from otterbot.oauth_client import OAuthQQ
 
 
 def qq_login(req):

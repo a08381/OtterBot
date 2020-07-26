@@ -18,8 +18,8 @@ import json
 #import pymysql
 import time
 from time import strftime, localtime
-from ffxivbot.models import *
-from ffxivbot.handlers.QQUtils import *
+from otterbot.models import *
+from otterbot.handlers.QQUtils import *
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from hashlib import md5

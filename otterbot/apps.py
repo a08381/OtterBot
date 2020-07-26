@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class FfxivbotConfig(AppConfig):
-    name = 'ffxivbot'
+class OtterbotConfig(AppConfig):
+    name = "otterbot"

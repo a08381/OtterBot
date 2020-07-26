@@ -12,7 +12,7 @@ def quest_tooltip(req):
     quest_id = req.GET.get("id", 0)
     nocache = req.GET.get("nocache", "False") == "True"
     res_type = req.GET.get("type", "web")
-    print("quest_id:{}".format(quest_id))
+    # print("quest_id:{}".format(quest_id))
     try:
         if quest_id:
             try:

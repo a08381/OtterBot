@@ -31,27 +31,27 @@ def QQCommand_comment(*args, **kwargs):
             reply_content = " ".join(msg_segs[1:])
             comm = Comment.objects.get(id=comment_id)
             reply_bot = QQBot.objects.get(user_id=comm.bot_id)
-            if int(user_id) == int(ADMIN_ID) or int(user_id) == reply_bot.owner_id:
+            if int(user_id) == int(ADMIN_ID) or int(user_id) == int(reply_bot.owner_id):
                 message = '留言#{}"{}"的回复如下：\n======\n{}\n======\n[CQ:at,qq={}]'.format(
-                        comm.id, comm.content, reply_content, comm.left_by
-                    )
-            if comm.left_group:
-                jdata = {
-                    "action": "send_group_msg",
-                    "params": {"group_id": comm.left_group, "message": message},
-                }
-            else:
-                jdata = {
-                    "action": "send_private_msg",
-                    "params": {"user_id": comm.left_by, "message": message},
-                }
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.send)(
-                reply_bot.api_channel_name,
-                {"type": "send.event", "text": json.dumps(jdata)},
-            )
-            comm.reply = reply_content
-            comm.save(update_fields=["reply"])
+                    comm.id, comm.content, reply_content, comm.left_by
+                )
+                if comm.left_group:
+                    jdata = {
+                        "action": "send_group_msg",
+                        "params": {"group_id": comm.left_group, "message": message},
+                    }
+                else:
+                    jdata = {
+                        "action": "send_private_msg",
+                        "params": {"user_id": comm.left_by, "message": message},
+                    }
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.send)(
+                    reply_bot.api_channel_name,
+                    {"type": "send.event", "text": json.dumps(jdata)},
+                )
+                comm.reply = reply_content
+                comm.save(update_fields=["reply"])
         elif comment_content.strip().find("repost") == 0 and int(user_id) == int(ADMIN_ID):
             msg_segs = comment_content.replace("repost", "", 1).strip().split(" ")
             while "" in msg_segs:

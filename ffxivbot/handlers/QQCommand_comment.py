@@ -60,7 +60,7 @@ def QQCommand_comment(*args, **kwargs):
             comm = Comment.objects.get(id=comment_id)
             reply_bot = QQBot.objects.get(user_id=comm.bot_id)
             message = "Comment#{} from user:{} bot:{} group:{}:\n{}".format(
-                comm.id, user_id, self_id, group_id, comm.content
+                comm.id, comm.left_by, comm.bot_id, comm.left_group, comm.content
             )
             jdata = {
                 "action": "send_private_msg",

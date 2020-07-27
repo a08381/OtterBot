@@ -10,20 +10,20 @@ from asgiref.sync import async_to_sync
 
 
 def QQCommand_comment(*args, **kwargs):
+    action_list = []
+    receive = kwargs["receive"]
     try:
         global_config = kwargs["global_config"]
         QQ_BASE_URL = global_config.get("QQ_BASE_URL")
         ADMIN_ID = global_config.get("ADMIN_ID")
         ADMIN_BOT = global_config.get("ADMIN_BOT")
-        action_list = []
-        receive = kwargs["receive"]
         bot = kwargs["bot"]
 
         user_id = receive["user_id"]
         self_id = receive["self_id"]
         group_id = receive["group_id"] if receive["message_type"] == "group" else ""
         comment_content = receive["message"].replace("/comment", "", 1).strip()
-        if comment_content.strip().find("reply") == 0 and int(user_id) == int(ADMIN_ID):
+        if comment_content.strip().find("reply") == 0:
             msg_segs = comment_content.replace("reply", "", 1).strip().split(" ")
             while "" in msg_segs:
                 msg_segs.remove("")
@@ -31,7 +31,8 @@ def QQCommand_comment(*args, **kwargs):
             reply_content = " ".join(msg_segs[1:])
             comm = Comment.objects.get(id=comment_id)
             reply_bot = QQBot.objects.get(user_id=comm.bot_id)
-            message = '留言#{}"{}"的回复如下：\n======\n{}\n======\n[CQ:at,qq={}]'.format(
+            if int(user_id) == int(ADMIN_ID) or int(user_id) == reply_bot.owner_id:
+                message = '留言#{}"{}"的回复如下：\n======\n{}\n======\n[CQ:at,qq={}]'.format(
                         comm.id, comm.content, reply_content, comm.left_by
                     )
             if comm.left_group:
@@ -51,6 +52,25 @@ def QQCommand_comment(*args, **kwargs):
             )
             comm.reply = reply_content
             comm.save(update_fields=["reply"])
+        elif comment_content.strip().find("repost") == 0 and int(user_id) == int(ADMIN_ID):
+            msg_segs = comment_content.replace("repost", "", 1).strip().split(" ")
+            while "" in msg_segs:
+                msg_segs.remove("")
+            comment_id = msg_segs[0]
+            comm = Comment.objects.get(id=comment_id)
+            reply_bot = QQBot.objects.get(user_id=comm.bot_id)
+            message = "Comment#{} from user:{} bot:{} group:{}:\n{}".format(
+                comm.id, user_id, self_id, group_id, comm.content
+            )
+            jdata = {
+                "action": "send_private_msg",
+                "params": {"user_id": reply_bot.owner_id, "message": message},
+            }
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.send)(
+                reply_bot.api_channel_name,
+                {"type": "send.event", "text": json.dumps(jdata)},
+            )
         elif comment_content != "":
             comment = Comment(
                 left_by=str(user_id),
@@ -78,9 +98,9 @@ def QQCommand_comment(*args, **kwargs):
         else:
             msg = "请输入留言内容"
 
-        reply_action = reply_message_action(receive, msg)
-        action_list.append(reply_action)
-        return action_list
+            reply_action = reply_message_action(receive, msg)
+            action_list.append(reply_action)
+            return action_list
     except Exception as e:
         msg = "Error: {}".format(type(e))
         action_list.append(reply_message_action(receive, msg))

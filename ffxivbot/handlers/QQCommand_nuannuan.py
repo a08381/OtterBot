@@ -52,7 +52,9 @@ def QQCommand_nuannuan(*args, **kwargs):
                     im.save(output_buffer, format='JPEG')
                     byte_data = output_buffer.getvalue()
                     base64_str = base64.b64encode(byte_data).decode("utf-8")
-                    msg = [{"type": "image", "file": "base64://{}".format(base64_str)}]
+                    msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
+                    base64_url = "base64://" + base64_str
+                    msg = [{"type": "image", "data": {"file": base64_url}}]
         except Exception as e:
             msg = "Error: {}".format(type(e))
             traceback.print_exc()

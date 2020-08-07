@@ -42,12 +42,12 @@ def QQGroupCommand_live(*args, **kwargs):
                     else:
                         (lvu, lvu_created) = LiveUser.objects.get_or_create(room_id=int(room), platform=platform)
                         if lvu_created:
-                            # lvu.save()
-                            # group.live_subscription.add(lvu)
-                            msg = "功能升级中，暂时无法新增直播订阅"
+                            lvu.save()
+                            group.live_subscription.add(lvu)
+                            # msg = "功能升级中，暂时无法新增直播订阅"
                         else:
                             group.live_subscription.add(lvu)
-                            msg = "{} 的订阅添加成功".format(lvu)
+                        msg = "{} 的订阅添加成功".format(lvu)
                 # except LiveUser.DoesNotExist:
                 #     msg = "未设置 {} 的订阅计划，请检查输入或联系机器人管理员添加".format(live_name)
                 except IndexError:

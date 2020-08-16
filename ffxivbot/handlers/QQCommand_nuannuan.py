@@ -26,19 +26,16 @@ def QQCommand_nuannuan(*args, **kwargs):
         try:
             rsshub = RsshubUtil()
             feed = rsshub.biliuservedio(15503317)
+            res_data = extract_nn(feed)
+            if not res_data:
+                rsshub = RsshubUtil()
+                feed = rsshub.biliuserdynamic(15503317)
+                res_data = extract_nn(feed)
             # print(feed)
-            pattern = r"【FF14\/时尚品鉴】第\d+期 满分攻略"
-            msg = None
-            for item in feed["items"]:
-                # print(item["title"])
-                if re.match(pattern, item["title"]):
-                    h = BeautifulSoup(item["summary"])
-                    text = h.text.replace("个人攻略网站", "游玩C攻略站")
-                    msg = "{}\n{}\n{}".format(item["title"], text, item["id"])
-                    break
-            if not msg:
+            if not res_data:
                 msg = "无法查询到有效数据，请稍后再试"
             else:
+                msg = "{}\n{}\n{}".format(res_data["title"], res_data["content"], res_data["url"])
                 bot_version = json.loads(bot.version_info)[
                     "coolq_edition"].lower() if bot.version_info != '{}' else "pro"
                 if bot_version == "pro":
@@ -65,3 +62,24 @@ def QQCommand_nuannuan(*args, **kwargs):
         action_list.append(reply_message_action(receive, msg))
         logging.error(e)
     return action_list
+
+
+def extract_nn(feed):
+    try:
+        pattern = r"【FF14\/时尚品鉴】第\d+期 满分攻略"
+        res_data = None
+        for item in feed["items"]:
+            # print(item["title"])
+            if re.match(pattern, item["title"]):
+                h = BeautifulSoup(item["summary"])
+                text = h.text.replace("个人攻略网站", "游玩C攻略站")
+                res_data = {
+                    "url": item["id"],
+                    "title": item["title"],
+                    "content": text,
+                    "image": h.img.attrs["src"],
+                }
+                break
+        return res_data
+    except:
+        return None

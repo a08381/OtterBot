@@ -278,9 +278,11 @@ def call_api(bot, action, params, echo=None, **kwargs):
                 send_data["picUrl"] = attachments[0]["url"]
                 send_data["picBase64Buf"] = ""
                 send_data["fileMd5"] = ""
+            if isinstance(message, str) and len(message) > 960:
+                message = message[:950] + "\n......"
             send_data["content"] = message
-            # print("IOTQQ send_data:")
-            # print(json.dumps(send_data, indent=4))
+            print("IOTQQ send_data:")
+            print(json.dumps(send_data, indent=4))
             r = requests.post(
                 bot.iotqq_url,
                 headers=headers,
@@ -677,6 +679,7 @@ class PikaConsumer(object):
                         # self.acknowledge_message(basic_deliver.delivery_tag)
                         # return
                     group_commands = json.loads(group.commands)
+                    group_bots = json.loads(group.bots)
 
                     try:
                         member_list = json.loads(group.member_list)
@@ -890,17 +893,20 @@ class PikaConsumer(object):
                     )
 
                 if receive["message"].find("/ping") == 0:
+                    time_from_receive = receive["time"]
+                    if time_from_receive > 3000000000:
+                        time_from_receive = time_from_receive / 1000
                     msg = ""
                     if "detail" in receive["message"]:
                         msg += "[CQ:at,qq={}]\ncoolq->server: {:.2f}s\nserver->rabbitmq: {:.2f}s\nhandle init: {:.2f}s".format(
                             receive["user_id"],
-                            receive["consumer_time"] - receive["time"],
+                            receive["consumer_time"] - time_from_receive,
                             receive["pika_time"] - receive["consumer_time"],
                             time.time() - receive["pika_time"],
                         )
                     else:
                         msg += "[CQ:at,qq={}] {:.2f}s".format(
-                            receive["user_id"], time.time() - receive["time"]
+                            receive["user_id"], time.time() - time_from_receive
                         )
                     msg = msg.strip()
                     LOGGER.info("{} calling command: {}".format(user_id, "/ping"))
@@ -920,10 +926,9 @@ class PikaConsumer(object):
                 for command_key in command_keys:
                     if receive["message"].find(command_key) == 0:
                         if receive["message_type"] == "group" and group_commands:
-                            if (
-                                command_key in group_commands.keys()
-                                and group_commands[command_key] == "disable"
-                            ):
+                            if group_commands.get(command_key, "enable") == "disable":
+                                continue
+                            if group_bots and receive["self_id"] not in group_bots:
                                 continue
                         handle_method = getattr(
                             handlers,
@@ -1051,8 +1056,8 @@ class PikaConsumer(object):
                             reply_data,
                             post_type=receive.get("reply_api_type", "websocket"),
                         )
-            if receive["post_type"] == "event":
-                if receive["event"] == "group_increase":
+            if receive["post_type"] == "notice":
+                if receive["notice_type"] == "group_increase":
                     group_id = receive["group_id"]
                     user_id = receive["user_id"]
                     try:

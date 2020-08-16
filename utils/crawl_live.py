@@ -2,9 +2,11 @@
 import sys
 import os
 import django
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
 from FFXIV import settings
+
 django.setup()
 from ffxivbot.handlers.QQUtils import *
 from asgiref.sync import async_to_sync
@@ -30,16 +32,16 @@ from bs4 import BeautifulSoup
 
 socket.setdefaulttimeout(5)
 logging.basicConfig(
-                level = logging.INFO,
-                format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                handlers = {
-                        TimedRotatingFileHandler(
-                                        "log/crawl_live.log",
-                                        when = "D",
-                                        backupCount = 10
-                                    )
-                        }
-            )
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers={
+        TimedRotatingFileHandler(
+            "log/crawl_live.log",
+            when="D",
+            backupCount=10
+        )
+    }
+)
 
 
 def crawl_json(liveuser):
@@ -57,16 +59,15 @@ def crawl_json(liveuser):
                     "title": title,
                     "status": "live"
                 }
-                if face_url: jinfo.update({"image": face_url})
-                if name: jinfo.update({"name": name})
+                if face_url:
+                    jinfo.update({"image": face_url})
+                if name:
+                    jinfo.update({"name": name})
             else:
                 jinfo = {
                     "status": "offline",
                 }
             return jinfo
-        except json.decoder.JSONDecodeError as e:
-            logging.error("Error at parsing bilibili API to json:{}".format(s.text))
-            print("Error at parsing bilibili API to json:{}".format(s.text))
         except Exception as e:
             logging.error("Error at parsing bilibili API")
             print("Error at parsing bilibili API:{}".format(type(e)))
@@ -115,27 +116,29 @@ def crawl_live(liveuser, push=False):
     liveuser_info.update(jinfo)
     liveuser.info = json.dumps(liveuser_info)
     liveuser.last_update_time = int(time.time())
-    if live_status!="live":
+    if live_status != "live":
         for group in liveuser.subscribed_by.all():
             group.pushed_live.remove(liveuser)
     pushed_group = set()
-    if push and live_status=="live":
+    if push and live_status == "live":
         for bot in QQBot.objects.all():
-            group_id_list = [int(item["group_id"]) for item in json.loads(bot.group_list)] if json.loads(bot.group_list) else []
+            group_id_list = [int(item["group_id"]) for item in json.loads(bot.group_list)] if json.loads(
+                bot.group_list) else []
             for group in liveuser.subscribed_by.all():
                 try:
                     if int(group.group_id) not in group_id_list:
                         continue
-                    if (group.pushed_live.filter(name=liveuser.name, room_id=liveuser.room_id, platform=liveuser.platform).exists()):
+                    if group.pushed_live.filter(name=liveuser.name, room_id=liveuser.room_id,
+                                                platform=liveuser.platform).exists():
                         continue
                     msg = liveuser.get_share(mode="text")
                     if bot.share_banned:
                         jmsg = liveuser.get_share()
                         msg = "{}\n{}\n{}".format(
-                                jmsg.get("title"),
-                                jmsg.get("content"),
-                                jmsg.get("url")
-                            )
+                            jmsg.get("title"),
+                            jmsg.get("content"),
+                            jmsg.get("url")
+                        )
                     jdata = {
                         "action": "send_group_msg",
                         "params": {"group_id": int(group.group_id), "message": msg},
@@ -145,12 +148,14 @@ def crawl_live(liveuser, push=False):
                         print("pushing {} to {}".format(liveuser, group.group_id))
                         logging.info("pushing {} to {}".format(liveuser, group.group_id))
                         channel_layer = get_channel_layer()
-                        async_to_sync(channel_layer.send)(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata),})
+                        async_to_sync(channel_layer.send)(bot.api_channel_name,
+                                                          {"type": "send.event", "text": json.dumps(jdata), })
                     else:
-                        url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
+                        url = os.path.join(bot.api_post_url,
+                                           "{}?access_token={}".format(jdata["action"], bot.access_token))
                         headers = {'Content-Type': 'application/json'}
                         r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]), timeout=10)
-                        if r.status_code!=200:
+                        if r.status_code != 200:
                             logging.error(r.text)
                     group.pushed_live.add(liveuser)
                     pushed_group.add(group.group_id)

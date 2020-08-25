@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from FFXIV import settings
 from ffxivbot.models import *
 from .ren2res import ren2res
-import json, os
+import json, os, yaml
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FFXIVBOT_ROOT = os.environ.get("FFXIVBOT_ROOT", BASE_DIR)
@@ -77,7 +77,9 @@ def tata(req):
                 bot.save()
                 res_dict = {
                     "response": "success",
-                    "msg": "{}({})".format(bot.name, bot.user_id) + ("添加" if bot_created else "更新") + "成功，Token为:",
+                    "msg": "{}({})".format(bot.name, bot.user_id)
+                    + ("添加" if bot_created else "更新")
+                    + "成功，Token为:",
                     "id": bot.id,
                     "token": bot.access_token,
                 }
@@ -108,53 +110,58 @@ def tata(req):
                 res_dict["response"] = "success"
             elif optype == "download_conf":
                 response = HttpResponse(content_type="application/octet-stream")
-                response[
-                    "Content-Disposition"
-                ] = 'attachment; filename="{}.json"'.format(bot.user_id)
+                response["Content-Disposition"] = 'attachment; filename="setting.yml"'
                 config = json.load(open(CONFIG_PATH, encoding="utf-8"))
-                web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
-                web_base = web_base.replace("https://", "")
-                web_base = web_base.replace("http://", "")
-                ws_url = "wss://" + os.path.join(web_base, "ws/")
+                web_base = "botapi.dead-war.cn"
+                ws_host = "temp.dead-war.cn"
                 http_url = "https://" + os.path.join(web_base, "http/")
-                bot_conf = json.loads(
-                    '{\
-                        "host": "0.0.0.0",\
-                        "port": 5700,\
-                        "use_http": false,\
-                        "ws_host": "0.0.0.0",\
-                        "ws_port": 6700,\
-                        "use_ws": false,\
-                        "ws_reverse_url": "",\
-                        "ws_reverse_use_universal_client": true,\
-                        "enable_heartbeat": true,\
-                        "use_ws_reverse": "yes",\
-                        "ws_reverse_reconnect_interval": 5000,\
-                        "ws_reverse_reconnect_on_code_1000": "yes",\
-                        "post_url": "",\
-                        "access_token": "",\
-                        "secret": "",\
-                        "post_message_format": "string",\
-                        "serve_data_files": false,\
-                        "update_source": "github",\
-                        "update_channel": "stable",\
-                        "auto_check_update": false,\
-                        "auto_perform_update": false,\
-                        "thread_pool_size": 4,\
-                        "server_thread_pool_size": 1,\
-                        "show_log_console": false,\
-                        "enable_backward_compatibility": true\
-                    }'
-                )
+                bot_conf = {
+                    "debug": True,
+                    str(bot.user_id): {
+                        "cacheImage": True,
+                        "http": {
+                            "enable": False,
+                            "host": "0.0.0.0",
+                            "port": 5700,
+                            "accessToken": "",
+                            "postUrl": "",
+                            "postMessageFormat": "string",
+                            "secret": "",
+                        },
+                        "ws_reverse": [
+                            {
+                                "enable": True,
+                                "postMessageFormat": "string",
+                                "reverseHost": ws_host,
+                                "reversePort": 8002,
+                                "accessToken": "",
+                                "reversePath": "/ws",
+                                "reverseApiPath": "/api",
+                                "reverseEventPath": "/event",
+                                "useUniversal": True,
+                                "reconnectInterval": 3000,
+                            }
+                        ],
+                        "ws": {
+                            "enable": False,
+                            "postMessageFormat": "string",
+                            "accessToken": "SECRET",
+                            "wsHost": "0.0.0.0",
+                            "wsPort": 8080,
+                        },
+                    },
+                }
                 if bot.api_post_url:
-                    bot_conf["use_ws_reverse"] = False
-                    bot_conf["post_url"] = http_url
+                    bot_conf[str(bot.user_id)]["http"]["enable"] = True
+                    bot_conf[str(bot.user_id)]["http"]["postUrl"] = http_url
+                    bot_conf[str(bot.user_id)]["http"]["secret"] = bot.access_token
+                    bot_conf[str(bot.user_id)]["ws_reverse"][0]["enable"] = False
                 else:
-                    bot_conf["use_ws_reverse"] = True
-                    bot_conf["ws_reverse_url"] = ws_url
-                bot_conf["access_token"] = bot.access_token
-                bot_conf["secret"] = bot.access_token
-                response.write(json.dumps(bot_conf, indent=4))
+                    bot_conf[str(bot.user_id)]["ws_reverse"][0]["enable"] = True
+                    bot_conf[str(bot.user_id)]["ws_reverse"][0][
+                        "accessToken"
+                    ] = bot.access_token
+                response.write(yaml.dump(bot_conf).encode())
                 return response
         return JsonResponse(res_dict)
 
@@ -171,11 +178,7 @@ def tata(req):
         if coolq_edition != "":
             coolq_edition = coolq_edition[0].upper() + coolq_edition[1:]
         friend_list = json.loads(bot.friend_list)
-        friend_num = (
-            len(friend_list["friends"])
-            if friend_list and "friends" in friend_list.keys()
-            else "-1"
-        )
+        friend_num = len(friend_list) if friend_list else "-1"
         group_list = json.loads(bot.group_list)
         group_num = len(group_list) if group_list else -1
         bb["name"] = bot.name
@@ -184,7 +187,7 @@ def tata(req):
             bb["owner_id"] = bot.owner_id
         else:
             mid = len(bot.user_id) // 2
-            user_id = bot.user_id[: mid - 2] + "*" * 4 + bot.user_id[mid + 2:]
+            user_id = bot.user_id[: mid - 2] + "*" * 4 + bot.user_id[mid + 2 :]
             bb["user_id"] = user_id
             mid = len(bot.owner_id) // 2
             owner_id = bot.owner_id[: mid - 2] + "*" * 4 + bot.owner_id[mid + 2:]

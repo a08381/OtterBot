@@ -114,6 +114,26 @@ def get_market_data(server_name, item_name, hq=False):
     return msg
 
 
+def handle_item_name_abbr(item_name):
+    if item_name.startswith("第二期重建用的") and item_name.endswith("(检)"):
+        item_name = item_name.replace("(", "（").replace(")", "）")
+    if item_name.startswith("第二期重建用的") and not item_name.endswith("（检）"):
+        item_name = item_name + "（检）"
+    if item_name.upper() == "G12":
+        item_name = "陈旧的缠尾蛟革地图"
+    if item_name.upper() == "G11":
+        item_name = "陈旧的绿飘龙革地图"
+    if item_name.upper() == "G10":
+        item_name = "陈旧的瞪羚革地图"
+    if item_name.upper() == "G9":
+        item_name = "陈旧的迦迦纳怪鸟革地图"
+    if item_name.upper() == "G8":
+        item_name = "陈旧的巨龙革地图图"
+    if item_name.upper() == "G7":
+        item_name = "陈旧的飞龙革地图"
+    return item_name
+
+
 def handle_command(command_seg, user, group):
     help_msg = """/market item $name $server: 查询$server服务器的$name物品交易数据
 /market upload: 如何上报数据
@@ -123,8 +143,8 @@ Powered by https://universalis.app"""
         return msg
     elif command_seg[0].lower() == "item":
         # if time.time() < user.last_api_time + user.api_interval:
-        print("current time:{}".format(time.time()))
-        print("last_api_time:{}".format(user.last_api_time))
+        # print("current time:{}".format(time.time()))
+        # print("last_api_time:{}".format(user.last_api_time))
         if time.time() < user.last_api_time + 15:
             msg = "[CQ:at,qq={}] 技能冷却中，请勿频繁调用".format(user.user_id)
             return msg
@@ -152,6 +172,7 @@ Powered by https://universalis.app"""
         if hq:
             item_name = item_name.replace("hq", "", 1)
             item_name = item_name.replace("HQ", "", 1)
+        item_name = handle_item_name_abbr(item_name)
         msg = get_market_data(server_name, item_name, hq)
         user.last_api_time = time.time()
         user.save(update_fields=["last_api_time"])
@@ -180,7 +201,7 @@ def QQCommand_market(*args, **kwargs):
         command_seg = command_msg.split(" ")
         while "" in command_seg:
             command_seg.remove("")
-        print("Receving command from {} in {}".format(bot, group))
+        # print("Receving command from {} in {}".format(bot, group))
         msg = handle_command(command_seg, user, group)
         msg = msg.strip()
 

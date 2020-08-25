@@ -12,7 +12,6 @@ def QQCommand_donate(*args, **kwargs):
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
-        msg = "酷Q已跑路，暂时不要使用赞助渠道"
         # msg = [{"type":"text","data":{"text":"我很可爱(*╹▽╹*)请给我钱"}},
         #     {"type":"image","data":{"file":QQ_BASE_URL+"static/alipay.jpg"}},
         #     {"type":"image","data":{"file":QQ_BASE_URL+"static/redpack.png"}}]

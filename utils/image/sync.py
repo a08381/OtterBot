@@ -60,8 +60,6 @@ def get_config():
 
     parser.add_argument('-l', '--load', action='store_true',
                         help='Load images from the resource file')
-    parser.add_argument('-u', '--user',
-                        help='The uploader user_id of imported images')
     parser.add_argument('-s', '--save', action='store_true',
                         help='Save images to the resource file')
     parser.add_argument('-f', '--file', default="images.txt",
@@ -78,25 +76,21 @@ def get_config():
 
 
 def load_images(**kwargs):
-    user_id = kwargs.get("user", None)
-    users = QQUser.objects.filter(user_id=user_id)
-    if not users:
-        print("You must provide a user to manage the images")
-        exit(1)
-    user = users[0]
     file = kwargs.get("file", "images.txt")
     ok_cnt = 0
     with codecs.open(file, "r", "utf8") as f:
         lines = f.readlines()
         for line in tqdm(lines):
             j = json.loads(line)
+            user_id = int(j["uploader"])
+            (user, created) = QQUser.objects.get_or_create(user_id=user_id)
             try:
                 img = Image(
                     domain=j["domain"],
                     key=j["key"],
                     name=j["name"],
                     path=j["path"],
-                    img_hash="null",
+                    img_hash="from_super",
                     timestamp=int(time.time()),
                     add_by=user,
                 )
@@ -121,6 +115,7 @@ def save_images(**kwargs):
                     "key": img.key,
                     "name": img.name,
                     "path": img.path,
+                    "uploader": img.add_by.user_id,
                 }
                 line = json.dumps(d)
                 f.write(line)

@@ -437,6 +437,32 @@
       </div>
     </div>
   </div>
+  <div>
+    <div class="modal fade" id="download_conf">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fa-pull-left">下载配置文件</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                                                                                              class="fa fa-close">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              请在下方输入您在领养时输入的access token后，选择下方按钮来下载用于mirai-native的配置文件或用于cqhttp-mirai的配置文件：
+            </p>
+            <p>
+              <input type="text" id="check_access_token_for_download_conf" maxlength="16">
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-block btn-warning" onclick="accept_add_bot('json')">JSON</button>
+            <button type="button" class="btn btn-block btn-success" onclick="accept_add_bot('yaml')">YAML</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 
@@ -602,7 +628,7 @@
                     let contentTypeHeader = request.getResponseHeader("Content-Type");
                     downloadLink.href = window.URL.createObjectURL(new Blob([blob], {type: contentTypeHeader}));
                     let contentDispositionHeader = request.getResponseHeader("Content-Disposition");
-                    let ma = contentDispositionHeader.match(/filename="(\d+.json)"/);
+                    let ma = contentDispositionHeader.match(/filename="(.+)"/);
                     if (ma != null) fileName = ma[1];
                     downloadLink.download = fileName;
                     document.body.appendChild(downloadLink);

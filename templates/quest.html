@@ -521,8 +521,9 @@
   </script>
 
   <script type="text/javascript">
-      var quest = document.getElementById("quest");
-      quest.setAttribute("class", "active");
+      $(function(){
+          $("#quest a").addClass("active");
+      });
   </script>
   <script type="text/javascript">
       function download_svg() {

@@ -584,7 +584,8 @@
     }
 
     function download_conf(id, token) {
-        let id = $("#downloadConfBotId").val();
+        if (id == null)
+            id = $("#downloadConfBotId").val();
         let client = $("#downloadConfClient").val();
         if (token == null)
             token = $("#downloadConfToken").val();

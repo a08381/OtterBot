@@ -104,6 +104,7 @@ class QQGroup(models.Model):
     )
     commands = models.TextField(default="{}")
     api = models.BooleanField(default=False)
+    wordcloud = models.BooleanField(default=False)
     server = models.ForeignKey(
         Server, on_delete=models.DO_NOTHING, blank=True, null=True
     )
@@ -237,6 +238,7 @@ class QQBot(models.Model):
     friend_list = models.TextField(default="{}")
     public = models.BooleanField(default=True)
     r18 = models.BooleanField(default=False)
+    api = models.BooleanField(default=True)
     disconnections = models.TextField(default="[]")
     disconnect_time = models.BigIntegerField(default=0)
     command_stat = models.TextField(default="{}")

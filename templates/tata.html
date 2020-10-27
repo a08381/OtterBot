@@ -53,7 +53,6 @@
                   <th style="text-align: center;">在线情况</th>
                   <th style="text-align: center;">hso</th>
                   <th style="text-align: center;">公开</th>
-                  <th style="text-align: center;">删除</th>
                   <th style="text-align: center;">配置</th>
                 </tr>
               </thead>
@@ -104,11 +103,10 @@
                     </td>
                   {% endif %}
                   <td>
-                    <button type="button" class="btn btn-block btn-danger" onclick="del_bot({{ bot.id }})">删除</button>
-                  </td>
-                  <td>
-                    <button type="button" class="btn btn-block btn-success" onclick="download_conf({{ bot.id }})">下载
-                    </button>
+                    <!-- <button type="button" class="btn btn-block btn-primary"
+                      onclick="download_conf({{ bot.id }})">下载</button> -->
+                    <a class="btn btn-block btn-primary open-DownloadConf" href="#downloadConf" data-id="{{ bot.id }}"
+                      data-toggle="modal" data-target="#DownloadConf">下载</a>
                   </td>
                 </tr>
                 {% endfor %}
@@ -119,6 +117,38 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="modal fade" id="DownloadConf" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="TOSTitle">配置下载</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">x</span>
+            </button>
+          </div>
+          <div class="modal-body" id="TOSContent">
+            <div style="display: none;">
+              <label for="accessToken">Bot Id</label>
+              <input type="text" class="form-control" id="downloadConfBotId" readonly="readonly">
+            </div>
+            <div>
+              <label for="accessToken">Access Token</label>
+              <input type="text" class="form-control" id="downloadConfToken" placeholder="" maxlength="16">
+            </div>
+            <div class="form-group">
+              <label>客户端</label>
+              <select class="form-control" id="downloadConfClient">
+                <option>Mirai</option>
+                <option>OICQ</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="download_conf()">下载</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal -->
     </div>
     <div class="row">
       <div class="col-md-6">
@@ -404,32 +434,6 @@
       </div>
     </div>
   </div>
-  <div>
-    <div class="modal fade" id="download_conf">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fa-pull-left">下载配置文件</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
-                                                                                              class="fa fa-close">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>
-              请在下方输入您在领养时输入的access token后，选择下方按钮来下载用于mirai-native的配置文件或用于cqhttp-mirai的配置文件：
-            </p>
-            <p>
-              <input type="text" id="check_access_token_for_download_conf" maxlength="16">
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-block btn-warning" onclick="accept_add_bot('json')">JSON</button>
-            <button type="button" class="btn btn-block btn-success" onclick="accept_add_bot('yaml')">YAML</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </section>
 
 
@@ -454,6 +458,10 @@
 <script src="https://cdn.bootcss.com/admin-lte/3.0.4/js/demo.min.js"></script>
 <!-- page script -->
 <script>
+    $(document).on("click", ".open-DownloadConf", function() {
+        var botId = $(this).data('id');
+        $("#downloadConfBotId").val(botId);
+    });
     $(function () {
         $('#example1').DataTable({
             "scrollX": false,
@@ -576,8 +584,10 @@
     }
 
     function download_conf(id, token) {
+        let id = $("#downloadConfBotId").val();
+        let client = $("#downloadConfClient").val();
         if (token == null)
-            token = prompt("请输入Token:");
+            token = $("#downloadConfToken").val();
         let request = new XMLHttpRequest();
         request.open('POST', '', true);
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -587,7 +597,7 @@
         request.onload = function (e) {
             if (this.status === 200) {
                 let blob = this.response;
-                let fileName = "config.json";
+                let fileName = "setting.yml";
                 console.log(blob);
                 if (window.navigator.msSaveOrOpenBlob) {
                     window.navigator.msSaveBlob(blob, fileName);
@@ -642,14 +652,23 @@
                         console.log(data);
                     }
                 } else {
-                    $('#popup').append("<div class=\"alert alert-success alert-dismissable fade show\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>" + data.msg + data.token + "<br>是否立即<a href=\"#\" class=\"alert-link\" onclick=\"download_conf(" + data.id + ", " + data.token + ")\">下载配置文件</a>？</div>");
+                    $('#popup').append("<div class=\"alert alert-success alert-dismissable fade show\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>" + data.msg + data.token + "<br>是否立即<a href=\"#\" class=\"alert-link\" onclick=\"call_gui(" + data.id + ", " + data.token + ")\">下载配置文件</a>？</div>");
                 }
             },
         });
     }
 
+    function call_gui(id, token) {
+        $('#add_bot').modal("hide");
+        $("#downloadConfBotId").val(id);
+        $("#downloadConfToken").val(token);
+        setTimeout(function () {
+            $('#DownloadConf').modal("show");
+        }, 500);
+    }
+
     function accept_add_bot() {
-	        let bots_length = {{ bots|length }};
+	      let bots_length = {{ bots|length }};
         let failed_count = $.cookie('failed_count');
         if (failed_count == null) failed_count = 0;
         if (failed_count < 5) {

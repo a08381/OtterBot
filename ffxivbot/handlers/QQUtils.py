@@ -1,12 +1,19 @@
 import json
 import logging
+import io
+import os
 import re
 import time
 import traceback
 import urllib
-
 import requests
+import base64
+import random
+import math
+import difflib
 from bs4 import BeautifulSoup
+from PIL import ImageFont, ImageDraw
+from PIL import Image as PILImage
 
 from ffxivbot.models import *
 
@@ -405,3 +412,68 @@ def check_raid(api_url, raid_data, raid_name, wol_name, server_name):
     except requests.exceptions.ReadTimeout:
         msg = "raid请求超时，请检查后台日志"
     return msg
+
+
+def text2img(text):
+    font = ImageFont.truetype(
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resources/font/msyh.ttc",
+        ),
+        20,
+    )
+    lines = text.split("\n")
+    img_height = 0
+    img_width = 0
+    for line in lines:
+        width, height = font.getsize(line)
+        img_width = max(img_width, width)
+        img_height += height
+    border = 10
+    img = PILImage.new(
+        "RGB", (img_width + 2 * border, img_height + 2 * border), color="white"
+    )
+    d = ImageDraw.Draw(img)
+    d.text((border, border), text, font=font, fill="#000000")
+    output_buffer = io.BytesIO()
+    img.save(output_buffer, format="JPEG")
+    byte_data = output_buffer.getvalue()
+    base64_str = base64.b64encode(byte_data).decode("utf-8")
+    msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
+    return msg
+
+class TagCompletion(object):
+    # 补全konachan搜图的tag
+    def __init__(self, vocab):
+        self.force = False
+        self.TAGS = json.load(open(vocab, "r", encoding="utf-8"))
+
+    def freq(self, word):
+        return self.TAGS.get(word, 0)
+
+    def select_tag(self, input_tag_name):
+        if self.TAGS.get(input_tag_name, None) is not None:
+            real_tag = input_tag_name
+        else:
+            close_matches = difflib.get_close_matches(
+                input_tag_name, self.TAGS.keys()
+            )
+            if close_matches:
+                # print("select by close match")
+                real_tag = close_matches[0]
+            else:
+                if not self.force:
+                    real_tag = input_tag_name
+                else:
+                    # 强制返回一个合法（有搜索结果）的随机tag
+                    real_tag = random.choice(list(self.TAGS.keys()))
+        return real_tag
+
+def update_konachan_tags():
+    # 截至2020.10.19 konachan拥有近8万个各种种类的tag
+    url = "https://konachan.net/tag.json?limit=999999"
+    all_tags = requests.get(url, timeout=(5, 60)).json()
+    reserved_tags = {
+        tag["name"]: tag["count"]
+        for tag in filter(lambda tag: not tag["ambiguous"] and tag["count"] and re.match(r"^.*[a-z0-9\u4e00-\u9fa5].*$", tag["name"], re.I), all_tags)
+    }
+    json.dump(reserved_tags, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "konachan_tags.json"), 'w', encoding='utf-8'))

@@ -31,7 +31,7 @@ def QQGroupCommand_wordcloud(*args, **kwargs):
 /wordcloud clear: 清除群词云记录
 /wordcloud generate: 生成群词云
 """
-        elif user_info["role"] != "owner" and user_info["role"] != "admin":
+        elif user_info["role"] != "owner" and user_info["role"] != "admin" and str(user_id) != str(bot.owner_id):
             msg = "仅群主与管理员有权限设置、查看群词云"
         elif message.endswith("enable"):
             group.wordcloud = True

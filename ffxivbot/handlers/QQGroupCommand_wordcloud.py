@@ -20,6 +20,7 @@ def QQGroupCommand_wordcloud(*args, **kwargs):
         user_info = kwargs["user_info"]
         QQ_BASE_URL = global_config["QQ_BASE_URL"]
         action_list = []
+        bot = kwargs["bot"]
         receive = kwargs["receive"]
         user_id = receive["user_id"]
         group_id = receive["group_id"]

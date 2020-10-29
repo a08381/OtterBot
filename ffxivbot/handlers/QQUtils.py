@@ -477,3 +477,20 @@ def update_konachan_tags():
         for tag in filter(lambda tag: not tag["ambiguous"] and tag["count"] and re.match(r"^.*[a-z0-9\u4e00-\u9fa5].*$", tag["name"], re.I), all_tags)
     }
     json.dump(reserved_tags, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "konachan_tags.json"), 'w', encoding='utf-8'))
+
+def update_yiff_tags():
+    url = "https://e621.net/tags.json?limit=999999&page={}"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36 Edg/80.0.361.66'
+    }
+    reserved_tags = {}
+    for i in range(1, 900):
+        all_tags = requests.get(url.format(i), headers=headers, timeout=(5, 60)).json()
+        if type(all_tags) != list:
+            break
+        tags = {
+            tag["name"]: tag["post_count"]
+            for tag in filter(lambda tag: not tag["is_locked"] and tag["post_count"] and re.match(r"^.*[a-z0-9\u4e00-\u9fa5].*$", tag["name"], re.I), all_tags)
+        }
+        reserved_tags.update(tags)
+    json.dump(reserved_tags, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "yiff_tags.json"), 'w', encoding='utf-8'))

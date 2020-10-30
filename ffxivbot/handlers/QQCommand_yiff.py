@@ -4,11 +4,14 @@ import os
 import random
 import time
 import traceback
+import urllib.parse
 
 import requests
 
 from ffxivbot.models import *
 from .QQUtils import *
+
+corrector = TagCompletion(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "yiff_tags.json"))
 
 
 def is_nsfw(item):
@@ -28,16 +31,18 @@ def QQCommand_yiff(*args, **kwargs):
             msg = "What does the fox say?"
             second_command_msg = receive["message"].replace("/yiff", "", 1).strip()
             if bot.r18 and random.randint(0, 10) != 0:
-                if second_command_msg != "":
-                    alter_tags = HsoAlterName.objects.all()
+                alter_tags = HsoAlterName.objects.all()
+                tags = list(filter(lambda x : x, second_command_msg.split(" ")))
+                if tags:
                     for alter in alter_tags:
-                        second_command_msg = second_command_msg.replace(
-                            alter.name, alter.key
-                        )
-                    if "female" in second_command_msg:
-                        params = "tags=order:score+{}".format(second_command_msg)
+                        if alter.name in tags:
+                            tags[tags.index(alter.name)] = alter.key
+                    tags = list(map(corrector.select_tag, tags))
+                    tags_params = "+".join(list(map(urllib.parse.quote, tags)))
+                    if "female" in tags:
+                        params = "tags=order:score+{}".format(tags_params)
                     else:
-                        params = "tags=-intersex+-female+male+order:score+{}".format(second_command_msg)
+                        params = "tags=-intersex+-female+male+order:score+{}".format(tags_params)
                 else:
                     page = random.randint(1, 5)
                     params = "tags=-intersex+-female+male+order:rank&limit=20&page={}".format(page)
@@ -69,7 +74,7 @@ def QQCommand_yiff(*args, **kwargs):
                         if group_commands.get("r18", "disable") == "disable":
                             flag = is_nsfw(img)
                     destruct = 1 if flag else 0
-                    msg = "[CQ:image,file={},destruct={}]".format(img["sample"]["url"], destruct)
+                    msg = "[CQ:image,file={},destruct={}]".format(img["file"]["url"], destruct)
 
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

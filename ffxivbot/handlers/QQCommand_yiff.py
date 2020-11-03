@@ -37,7 +37,7 @@ def QQCommand_yiff(*args, **kwargs):
                     for alter in alter_tags:
                         if alter.name in tags:
                             tags[tags.index(alter.name)] = alter.key
-                    tags = list(map(corrector.select_tag, tags))
+                    # tags = list(map(corrector.select_tag, tags))
                     tags_params = "+".join(list(map(urllib.parse.quote, tags)))
                     if "female" in tags:
                         params = "tags=order:score+{}".format(tags_params)

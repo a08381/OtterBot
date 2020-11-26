@@ -30,7 +30,8 @@ def QQCommand_yiff(*args, **kwargs):
         else:
             msg = "What does the fox say?"
             second_command_msg = receive["message"].replace("/yiff", "", 1).strip()
-            if bot.r18 and random.randint(0, 10) != 0:
+            if bot.r18:
+                random.seed(time.time())
                 alter_tags = HsoAlterName.objects.all()
                 tags = list(filter(lambda x : x, second_command_msg.split(" ")))
                 if tags:

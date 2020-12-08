@@ -38,13 +38,13 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
                             "enable": True,
                             "postMessageFormat": "string",
                             "reverseHost": web_base,
-                            "reversePort": 80,
+                            "reversePort": 443,
                             "accessToken": "",
                             "reversePath": "/ws",
                             "reverseApiPath": "/api",
                             "reverseEventPath": "/event",
                             "useUniversal": True,
-                            "useTLS": False,
+                            "useTLS": True,
                             "reconnectInterval": 3000,
                         }
                     ],
@@ -356,8 +356,8 @@ def tata(req):
             web_base = config.get("WEB_BASE_URL", "xn--v9x.net")
             web_base = web_base.replace("https://", "")
             web_base = web_base.replace("http://", "").strip("/")
-            ws_url = "ws://" + os.path.join(web_base, "ws/")
-            http_url = "http://" + os.path.join(web_base, "http/")
+            ws_url = "wss://" + os.path.join(web_base, "ws/")
+            http_url = "https://" + os.path.join(web_base, "http/")
             bot_conf = generate_bot_conf(bot, client, web_base, http_url, ws_url)
             response.write(bot_conf)
             return response

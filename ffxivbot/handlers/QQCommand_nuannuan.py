@@ -35,8 +35,7 @@ def QQCommand_nuannuan(*args, **kwargs):
                 msg = "无法查询到有效数据，请稍后再试"
             else:
                 msg = "{}\n{}\n{}".format(res_data["title"], res_data["content"], res_data["url"])
-                bot_version = json.loads(bot.version_info)[
-                    "coolq_edition"].lower() if bot.version_info != '{}' else "pro"
+                bot_version = json.loads(bot.version_info).get("coolq_edition", "pro").lower() if bot.version_info != '{}' else "pro"
                 if bot_version == "pro":
                     font = ImageFont.truetype(
                         os.path.join(os.path.dirname(os.path.abspath(__file__)), "arknights/temp/msyh.ttc"), 32)

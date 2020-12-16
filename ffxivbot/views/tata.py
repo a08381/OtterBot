@@ -136,7 +136,7 @@ def generate_bot_conf(bot, client, web_base, http_url, ws_url):
             bot_conf["bots"][0]["websocket_reverse"][0]["enable"] = True
             bot_conf["bots"][0]["websocket_reverse"][0][
                 "url"
-            ] = f"ws://{web_base}:80/ws"
+            ] = f"{ws_url}"
             bot_conf["bots"][0]["websocket_reverse"][0][
                 "access_token"
             ] = bot.access_token

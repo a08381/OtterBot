@@ -192,7 +192,7 @@ def QQCommand_hh(*args, **kwargs):
         item_flag = False
         receive_msg = receive["message"].replace("/hh", "", 1).strip()
         bot_version = (
-            json.loads(bot.version_info)["coolq_edition"]
+            json.loads(bot.version_info).get("coolq_edition", "pro").lower()
             if bot.version_info != "{}"
             else "air"
         )

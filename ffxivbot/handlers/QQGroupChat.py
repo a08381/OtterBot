@@ -114,7 +114,7 @@ def QQGroupChat(*args, **kwargs):
             r.set(group_id_hash, json.dumps(group_mem))
 
         # tuling chatbot
-        chat_enable = group_commands.get("/chat", "disable") != "enable"
+        chat_enable = group_commands.get("/chat", "disable") == "enable"
         at_self_pattern = "\[CQ:at,qq={}(,text=.*)?\]".format(receive["self_id"])
         reply_pattern = "\[CQ:reply,id=.*?\]"
         chatting = re.search(at_self_pattern, receive["message"],) is not None

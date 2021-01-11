@@ -69,9 +69,7 @@ def QQCommand_image(*args, **kwargs):
                 if not qquser.able_to_upload_image:
                     msg = "[CQ:at,qq={}] 您由于触犯规则无权上传图片".format(receive["user_id"])
                 else:
-                    category = msg_list[1].strip()
-                    if category.startswith("$"):
-                        category = category[1:]
+                    category = msg_list[1].strip().strip("$")
                     CQ_text = msg_list[2].strip()
                     img_url = get_image_from_CQ(CQ_text)
                     if not img_url:
@@ -98,7 +96,7 @@ def QQCommand_image(*args, **kwargs):
                                 while "/" in name:
                                     name = name[name.find("/") + 1 :]
                                 try:
-                                    img = Image.objects.get(path=path)
+                                    img = Image.objects.get(domain=domain, path=path)
                                     msg = '图片"{}"已存在于类别"{}"之中，无法重复上传'.format(
                                         img.name, img.key
                                     )
@@ -110,6 +108,7 @@ def QQCommand_image(*args, **kwargs):
                                         path=path,
                                         img_hash="null",
                                         timestamp=int(time.time()),
+                                        url=url,
                                         add_by=qquser,
                                         add_by_bot=bot,
                                     )
@@ -168,7 +167,7 @@ def QQCommand_image(*args, **kwargs):
                     found = True
                 else:
                     img = random.sample(list(imgs), 1)[0]
-                    img_url = img.domain + img.path
+                    img_url = img.get_url()
                     r = requests.head(img_url, timeout=3)
                     if r.status_code == 404:
                         img.delete()

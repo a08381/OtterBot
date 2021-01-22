@@ -35,21 +35,7 @@ def QQCommand_nuannuan(*args, **kwargs):
                 msg = "无法查询到有效数据，请稍后再试"
             else:
                 msg = "{}\n{}\n{}".format(res_data["title"], res_data["content"], res_data["url"])
-                bot_version = json.loads(bot.version_info).get("coolq_edition", "pro").lower() if bot.version_info != '{}' else "pro"
-                if bot_version == "pro":
-                    font = ImageFont.truetype(
-                        os.path.join(os.path.dirname(os.path.abspath(__file__)), "arknights/resources/font/msyh.ttc"), 36)
-                    width, height = font.getsize_multiline(msg)
-                    im = Image.new("RGB", (width + 40, height + 40), (255, 255, 255))
-                    dr = ImageDraw.Draw(im)
-                    dr.text((20, 20), msg, font=font, fill="#000000")
-                    output_buffer = io.BytesIO()
-                    im.save(output_buffer, format='JPEG')
-                    byte_data = output_buffer.getvalue()
-                    base64_str = base64.b64encode(byte_data).decode("utf-8")
-                    msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
-                    base64_url = "base64://" + base64_str
-                    msg = [{"type": "image", "data": {"file": base64_url}}]
+                msg = text2img(msg)
         except Exception as e:
             msg = "Error: {}".format(type(e))
             traceback.print_exc()

@@ -419,7 +419,7 @@ def text2img(text):
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resources/font/msyh.ttc",
         ),
-        20,
+        36,
     )
     lines = text.split("\n")
     img_height = 0

@@ -32,7 +32,7 @@ else:
 
 
 @csrf_exempt
-def music(req, str_type: str):
+def music(req: HttpRequest, str_type: str):
     lower = str_type.lower()
     if lower == "url":
         ids = req.GET.get("id", 0)

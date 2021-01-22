@@ -38,7 +38,7 @@ def QQCommand_nuannuan(*args, **kwargs):
                 bot_version = json.loads(bot.version_info).get("coolq_edition", "pro").lower() if bot.version_info != '{}' else "pro"
                 if bot_version == "pro":
                     font = ImageFont.truetype(
-                        os.path.join(os.path.dirname(os.path.abspath(__file__)), "arknights/temp/msyh.ttc"), 32)
+                        os.path.join(os.path.dirname(os.path.abspath(__file__)), "arknights/resources/font/msyh.ttc"), 36)
                     width, height = font.getsize_multiline(msg)
                     im = Image.new("RGB", (width + 40, height + 40), (255, 255, 255))
                     dr = ImageDraw.Draw(im)

@@ -23,9 +23,9 @@ def crawl():
     action_list = [
         {"action": "get_group_list", "params": {}, "echo": "get_group_list"},
         {
-            "action": "_get_friend_list",
+            "action": "get_friend_list",
             "params": {"flat": True},
-            "echo": "_get_friend_list",
+            "echo": "get_friend_list",
         },
         {
             "action": "get_version_info",

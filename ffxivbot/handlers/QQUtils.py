@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 import io
@@ -63,15 +64,12 @@ def delete_message_action(message_id):
 
 
 # Weibo share
-def get_weibotile_share(weibotile, mode="json"):
-    content_json = json.loads(weibotile.content)
-    mblog = content_json["mblog"]
-    bs = BeautifulSoup(mblog["text"], "lxml")
+def get_weibotile_share(weibotile: WeiboTile, image: str, mode="json"):
     tmp = {
-        "url": content_json["scheme"],
-        "title": bs.get_text().replace("\u200b", "")[:32],
-        "content": "From {}'s Weibo".format(weibotile.owner),
-        "image": mblog["user"]["profile_image_url"],
+        "url": weibotile.itemid,
+        "title": weibotile.owner,
+        "content": weibotile.content[:32],
+        "image": image,
     }
     res_data = tmp
     if mode == "text":
@@ -421,14 +419,8 @@ def text2img(text):
         ),
         36,
     )
-    lines = text.split("\n")
-    img_height = 0
-    img_width = 0
-    for line in lines:
-        width, height = font.getsize(line)
-        img_width = max(img_width, width)
-        img_height += height
-    border = 10
+    border = 20
+    img_width, img_height = font.getsize_multiline(text)
     img = PILImage.new(
         "RGB", (img_width + 2 * border, img_height + 2 * border), color="white"
     )
@@ -440,6 +432,16 @@ def text2img(text):
     base64_str = base64.b64encode(byte_data).decode("utf-8")
     msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
     return msg
+
+
+def img_tag_to_cq(bs: BeautifulSoup) -> BeautifulSoup:
+    h = copy.deepcopy(bs)
+    imgs = h.find_all("img")
+    for img in imgs:
+        img_url = img['src']
+        img.replace_with(f"[CQ:image,file={img_url}]")
+    return h
+
 
 class TagCompletion(object):
     # 补全konachan搜图的tag

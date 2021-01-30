@@ -12,3 +12,4 @@ from .qq_check import qq_check
 from .login import login
 from .register import register
 from .logout import logout
+from .mirai import mirai

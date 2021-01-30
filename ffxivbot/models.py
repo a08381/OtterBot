@@ -13,8 +13,8 @@ import time
 
 
 class WeiboUser(models.Model):
-    name = models.CharField(default="", blank=True, max_length=16, unique=True)
-    uid = models.CharField(default="", max_length=16)
+    name = models.CharField(default="", blank=True, max_length=16)
+    uid = models.CharField(default="", max_length=16, unique=True)
     containerid = models.CharField(default="", max_length=32)
     last_update_time = models.BigIntegerField(default=0)
 

@@ -23,7 +23,7 @@ class RsshubUtil(object):
             display_video = kwargs.get("display_video", 1)
             if not uid:
                 raise Exception("No uid found for user.")
-            feed = self.raw_parse("/user/{}/{}".format(uid, display_video))
+            feed = self.raw_parse(f"/weibo/user/{uid}/{display_video}")
             return feed
         raise Exception('Router "{}" not supported for telegram.'.format(router))
 

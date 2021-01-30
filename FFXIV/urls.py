@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http.response import HttpResponseRedirect
 from django.urls import path
 from django.conf.urls import url, include
 from django.conf.urls.static import static
@@ -36,6 +37,7 @@ urlpatterns = [
     # path('hunt/', cache_page(60 * 2)()),
     path('hunt/', hunt),
     path("music/<str:str_type>", music),
+    path("mirai/version"),
     url(r'^oauth/qq/login/$', qq_login, name='qq_login'),
     url(r'^api/qqcallback', qq_check, name='qq_check'),
     # url(r'^oauth/qq/check/$', qq_check, name='qq_check'),
@@ -43,6 +45,7 @@ urlpatterns = [
     url(r'^login/', login),
     url(r'^register/', register),
     url(r'^logout/', logout),
+    url(r'^.*$', lambda x : HttpResponseRedirect('')),
 ]
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()

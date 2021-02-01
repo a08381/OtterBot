@@ -5,7 +5,7 @@ import django
 
 BASE_DIR = Path(__file__).absolute().parent.parent
 sys.path.append(BASE_DIR)
-os.environ['DJANGO_SETTINGS_MODULE'] = 'FFXIV.settings'
+os.environ["DJANGO_SETTINGS_MODULE"] = "FFXIV.settings"
 from FFXIV import settings
 
 django.setup()
@@ -22,19 +22,36 @@ from logging.handlers import TimedRotatingFileHandler
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers={
-        TimedRotatingFileHandler(
-            "log/crawl.log",
-            when="D",
-            backupCount=5
-        )
-    }
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers={TimedRotatingFileHandler(BASE_DIR / "log/crawl.log", when="D", backupCount=5)},
 )
 rss = RsshubUtil()
 
 
-def crawl_json(liveuser):
+async def send_message(bot: QQBot, jdata: dict):
+    if not bot.api_post_url:
+        channel_layer = get_channel_layer()
+        await channel_layer.send(
+            bot.api_channel_name,
+            {
+                "type": "send.event",
+                "text": json.dumps(jdata),
+            },
+        )
+    else:
+        url = os.path.join(
+            bot.api_post_url,
+            "{}?access_token={}".format(jdata["action"], bot.access_token),
+        )
+        headers = {"Content-Type": "application/json"}
+        r = requests.post(
+            url=url, headers=headers, data=json.dumps(jdata["params"]), timeout=10
+        )
+        if r.status_code != 200:
+            logging.error(r.text)
+
+
+def crawl_json(liveuser: LiveUser):
     platform = liveuser.platform
     rsshub = RsshubUtil()
     if platform == "bilibili":
@@ -45,10 +62,7 @@ def crawl_json(liveuser):
                 title = re.sub(r"\d+-\d+-\d+ \d+:\d+:\d+", "", entry.title).strip()
                 face_url = ""
                 name = feed.feed.title.replace(" 直播间开播状态", "")
-                jinfo = {
-                    "title": title,
-                    "status": "live"
-                }
+                jinfo = {"title": title, "status": "live"}
                 if face_url:
                     jinfo.update({"image": face_url})
                 if name:
@@ -70,12 +84,11 @@ def crawl_json(liveuser):
                 title = re.sub(r"\d+-\d+-\d+ \d+:\d+:\d+", "", entry.title).strip()
                 face_url = ""
                 name = feed.feed.title.replace("的斗鱼直播间", "")
-                jinfo = {
-                    "title": title,
-                    "status": "live"
-                }
-                if face_url: jinfo.update({"image": face_url})
-                if name: jinfo.update({"name": name})
+                jinfo = {"title": title, "status": "live"}
+                if face_url:
+                    jinfo.update({"image": face_url})
+                if name:
+                    jinfo.update({"name": name})
             else:
                 jinfo = {
                     "status": "offline",
@@ -88,7 +101,7 @@ def crawl_json(liveuser):
     return None
 
 
-async def crawl_live(liveuser, push=False):
+async def crawl_live(liveuser: LiveUser, push=False):
     if not liveuser.subscribed_by.exists():
         for group in liveuser.subscribed_by.all():
             group.pushed_live.remove(liveuser)
@@ -112,45 +125,39 @@ async def crawl_live(liveuser, push=False):
     pushed_group = set()
     if push and live_status == "live":
         for bot in QQBot.objects.all():
-            group_id_list = [int(item["group_id"]) for item in json.loads(bot.group_list)] if json.loads(
-                bot.group_list) else []
+            group_id_list = (
+                [int(item["group_id"]) for item in json.loads(bot.group_list)]
+                if json.loads(bot.group_list)
+                else []
+            )
             for group in liveuser.subscribed_by.all():
                 try:
                     if int(group.group_id) not in group_id_list:
                         continue
-                    if group.pushed_live.filter(name=liveuser.name, room_id=liveuser.room_id,
-                                                platform=liveuser.platform).exists():
+                    if group.pushed_live.filter(
+                        name=liveuser.name,
+                        room_id=liveuser.room_id,
+                        platform=liveuser.platform,
+                    ).exists():
                         continue
-                    msg = liveuser.get_share(mode="text")
+                    msg = liveuser.get_share()
                     if bot.share_banned:
-                        jmsg = liveuser.get_share()
+                        jmsg = liveuser.get_share(mode="text")
                         msg = "{}\n{}\n{}".format(
-                            jmsg.get("title"),
-                            jmsg.get("content"),
-                            jmsg.get("url")
+                            jmsg.get("title"), jmsg.get("content"), jmsg.get("url")
                         )
                     jdata = {
                         "action": "send_group_msg",
                         "params": {"group_id": int(group.group_id), "message": msg},
                         "echo": "",
                     }
-                    if not bot.api_post_url:
-                        print("pushing {} to {}".format(liveuser, group.group_id))
-                        logging.info("pushing {} to {}".format(liveuser, group.group_id))
-                        channel_layer = get_channel_layer()
-                        await channel_layer.send(bot.api_channel_name,
-                                                          {"type": "send.event", "text": json.dumps(jdata), })
-                    else:
-                        url = os.path.join(bot.api_post_url,
-                                           "{}?access_token={}".format(jdata["action"], bot.access_token))
-                        headers = {'Content-Type': 'application/json'}
-                        r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]), timeout=10)
-                        if r.status_code != 200:
-                            logging.error(r.text)
+                    await send_message(bot, jdata)
                     group.pushed_live.add(liveuser)
                     pushed_group.add(group.group_id)
                 except Exception as e:
-                    logging.error("Error at pushing crawled live to {}: {}".format(group, e))
+                    logging.error(
+                        "Error at pushing crawled live to {}: {}".format(group, e)
+                    )
     liveuser.status = live_status
     liveuser.save()
     logging.info("crawled {}".format(liveuser))
@@ -166,12 +173,12 @@ async def crawl_wb(weibouser: WeiboUser, push=False):
                 weibouser.save()
             bs = BeautifulSoup(item["summary"], "lxml")
             h = img_tag_to_cq(bs)
-            
+
             t = WeiboTile(itemid=item["id"])
             t.owner = weibouser
             t.content = h.text
             t.crawled_time = int(item["published_parsed"])
-            
+
             channel_layer = get_channel_layer()
 
             groups = weibouser.subscribed_by.all()
@@ -180,40 +187,45 @@ async def crawl_wb(weibouser: WeiboUser, push=False):
             t.save()
             for group in groups:
                 for bot in bots:
-                    group_id_list = [item["group_id"] for item in json.loads(bot.group_list)] if json.loads(bot.group_list) else []
-                    if int(group.group_id) not in group_id_list: continue
+                    group_id_list = (
+                        [item["group_id"] for item in json.loads(bot.group_list)]
+                        if json.loads(bot.group_list)
+                        else []
+                    )
+                    if int(group.group_id) not in group_id_list:
+                        continue
                     try:
-                        msg = get_weibotile_share(t, feed["feed"]["image"]["href"], mode="text")
+                        msg = get_weibotile_share(
+                            t, feed["feed"]["image"]["href"], mode="text"
+                        )
                         if bot.share_banned:
-                            msg = "{}\n{}\n{}".format(
-                                t.owner,
-                                h.text,
-                                t.itemid
-                            )
+                            msg = "{}\n{}\n{}".format(t.owner, h.text, t.itemid)
                         logging.info("Pushing {} to group: {}".format(t, group))
                         # print("msg: {}".format(msg))
                         if push:
                             t.pushed_group.add(group)
                             jdata = {
                                 "action": "send_group_msg",
-                                "params": {"group_id": int(group.group_id), "message": msg},
+                                "params": {
+                                    "group_id": int(group.group_id),
+                                    "message": msg,
+                                },
                                 "echo": "",
                             }
-                            if not bot.api_post_url:
-                                await channel_layer.send(bot.api_channel_name, {"type": "send.event", "text": json.dumps(jdata), })
-                            else:
-                                url = os.path.join(bot.api_post_url, "{}?access_token={}".format(jdata["action"], bot.access_token))
-                                headers = {'Content-Type': 'application/json'}
-                                r = requests.post(url=url, headers=headers, data=json.dumps(jdata["params"]), timeout=5)
-                                if r.status_code!=200:
-                                    logging.error(r.text)
+                            await send_message(bot, jdata)
                     except requests.ConnectionError as e:
-                        logging.error("Pushing {} to group: {} ConnectionError".format(t, group))
+                        logging.error(
+                            "Pushing {} to group: {} ConnectionError".format(t, group)
+                        )
                     except requests.ReadTimeout as e:
-                        logging.error("Pushing {} to group: {} timeout".format(t, group))
+                        logging.error(
+                            "Pushing {} to group: {} timeout".format(t, group)
+                        )
                     except Exception as e:
                         traceback.print_exc()
-                        logging.error("Error at pushing crawled weibo to {}: {}".format(group, e))
+                        logging.error(
+                            "Error at pushing crawled weibo to {}: {}".format(group, e)
+                        )
 
             logging.info("crawled {} of {}".format(t.itemid, t.owner))
     return
@@ -247,12 +259,19 @@ async def e_crawl_wb():
         logging.info("Crawl {} finish".format(wbu.name))
 
 
-async def crawl():
+async def r_crawl_live():
     while True:
-        e_crawl_live()
-        e_crawl_wb()
+        await e_crawl_live()
+        await asyncio.sleep(300)
+
+
+async def r_crawl_wb():
+    while True:
+        await e_crawl_wb()
         await asyncio.sleep(300)
 
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(crawl())
+    loop = asyncio.get_event_loop()
+    gather = asyncio.gather(r_crawl_live(), r_crawl_wb(), loop=loop)
+    loop.run_until_complete(gather)

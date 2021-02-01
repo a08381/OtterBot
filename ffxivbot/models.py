@@ -57,7 +57,7 @@ class LiveUser(models.Model):
                 "content": "欢迎加群660557003反映问题",
                 "image": "https://xn--v9x.net/static/dist/img/tata.jpg",
             }
-        if mode == "json":
+        if mode == "text":
             res_data = "[CQ:share,url={},title={},content={},image={}]".format(
                 res_data["url"],
                 res_data["title"],

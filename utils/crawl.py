@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import os
 from pathlib import Path
 import django
 
@@ -140,9 +141,9 @@ async def crawl_live(liveuser: LiveUser, push=False):
                         platform=liveuser.platform,
                     ).exists():
                         continue
-                    msg = liveuser.get_share()
+                    msg = liveuser.get_share(mode="text")
                     if bot.share_banned:
-                        jmsg = liveuser.get_share(mode="text")
+                        jmsg = liveuser.get_share()
                         msg = "{}\n{}\n{}".format(
                             jmsg.get("title"), jmsg.get("content"), jmsg.get("url")
                         )

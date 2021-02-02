@@ -291,19 +291,19 @@ async def e_crawl_wb():
 
 async def r_crawl_live():
     while True:
-        await e_crawl_live()
+        asyncio.create_task(e_crawl_live())
         await asyncio.sleep(300)
 
 
 async def r_crawl_wb():
     while True:
-        await e_crawl_wb()
+        asyncio.create_task(e_crawl_wb())
         await asyncio.sleep(300)
 
 
 async def r_crawl_mirai():
     while True:
-        await crawl_mirai()
+        asyncio.create_task(crawl_mirai())
         await asyncio.sleep(3600)
 
 
@@ -311,5 +311,6 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     r1 = asyncio.create_task(r_crawl_live())
     r2 = asyncio.create_task(r_crawl_wb())
-    asyncio.gather(r1, r2, loop=loop)
+    r3 = asyncio.create_task(r_crawl_mirai())
+    asyncio.gather(r1, r2, r3, loop=loop)
     loop.run_forever()

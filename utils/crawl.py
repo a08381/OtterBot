@@ -3,6 +3,7 @@ import sys
 import os
 from pathlib import Path
 import django
+from redis import Redis
 
 BASE_DIR = Path(__file__).absolute().parent.parent
 sys.path.append(BASE_DIR)
@@ -232,6 +233,34 @@ async def crawl_wb(weibouser: WeiboUser, push=False):
     return
 
 
+async def crawl_mirai():
+    rss = RsshubUtil("https://github.com/")
+    feed = rss.raw_parse("/mamoe/mirai/releases.atom")
+    found_stable = False
+    found_dev = False
+    with Redis(host="localhost", port=6379, decode_responses=True) as r:
+        stable_ver = r.get("MIRAI_STABLE_VERSION")
+        dev_ver = r.get("MIRAI_DEV_VERSION")
+        if feed and feed["items"]:
+            items = feed["items"]
+            while len(items) > 0:
+                item = items.pop(0)
+                title = item["title"]
+                if title.find("dev") != -1 and not found_dev:
+                    found_dev = True
+                    if dev_ver != title:
+                        requests.get(f"{os.getenv('JENKINS_SERVER')}/buildWithParameters?token={os.getenv('JENKINS_TOKEN')}")
+                    r.set("MIRAI_DEV_VERSION", title, ex=7200)
+                if title.find("dev") == -1 and not found_stable:
+                    found_stable = True
+                    if stable_ver != title:
+                        requests.get(f"{os.getenv('JENKINS_SERVER')}/buildWithParameters?token={os.getenv('JENKINS_TOKEN')}")
+                    r.set("MIRAI_STABLE_VERSION", title, ex=7200)
+                if found_stable and found_dev:
+                    break
+                
+
+
 async def e_crawl_live():
     lus = LiveUser.objects.all()
     for lu in lus:
@@ -272,7 +301,15 @@ async def r_crawl_wb():
         await asyncio.sleep(300)
 
 
+async def r_crawl_mirai():
+    while True:
+        await crawl_mirai()
+        await asyncio.sleep(3600)
+
+
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    gather = asyncio.gather(r_crawl_live(), r_crawl_wb(), loop=loop)
-    loop.run_until_complete(gather)
+    r1 = asyncio.create_task(r_crawl_live())
+    r2 = asyncio.create_task(r_crawl_wb())
+    asyncio.gather(r1, r2, loop=loop)
+    loop.run_forever()

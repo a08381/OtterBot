@@ -1,4 +1,4 @@
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from redis import Redis
 
@@ -7,6 +7,6 @@ def mirai(req: HttpRequest):
     stable = req.GET.get("stable", 1)
     r = Redis(host="localhost", port=6379, decode_responses=True)
     if stable == 1:
-        return r.get("MIRAI_STABLE_VERSION")
+        return HttpResponse(r.get("MIRAI_STABLE_VERSION"))
     else:
-        return r.get("MIRAI_DEV_VERSION")
+        return HttpResponse(r.get("MIRAI_DEV_VERSION"))

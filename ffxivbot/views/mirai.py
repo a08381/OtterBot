@@ -5,8 +5,8 @@ from redis import Redis
 @csrf_exempt
 def mirai(req: HttpRequest):
     stable = req.GET.get("stable", 1)
-    with Redis(host="localhost", port=6379, decode_responses=True) as r:
-        if stable == 1:
-            return r.get("MIRAI_STABLE_VERSION")
-        else:
-            return r.get("MIRAI_DEV_VERSION")
+    r = Redis(host="localhost", port=6379, decode_responses=True)
+    if stable == 1:
+        return r.get("MIRAI_STABLE_VERSION")
+    else:
+        return r.get("MIRAI_DEV_VERSION")

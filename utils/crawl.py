@@ -5,8 +5,8 @@ from pathlib import Path
 import django
 from redis import Redis
 
-BASE_DIR = Path(__file__).absolute().parent.parent
-sys.path.append(BASE_DIR)
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR))
 os.environ["DJANGO_SETTINGS_MODULE"] = "FFXIV.settings"
 from FFXIV import settings
 
@@ -28,6 +28,7 @@ logging.basicConfig(
     handlers={TimedRotatingFileHandler(BASE_DIR / "log/crawl.log", when="D", backupCount=5)},
 )
 rss = RsshubUtil()
+loop = asyncio.get_event_loop()
 
 
 async def send_message(bot: QQBot, jdata: dict):
@@ -179,7 +180,7 @@ async def crawl_wb(weibouser: WeiboUser, push=False):
             t = WeiboTile(itemid=item["id"])
             t.owner = weibouser
             t.content = h.text
-            t.crawled_time = int(item["published_parsed"])
+            t.crawled_time = int(time.mktime(item["published_parsed"]))
 
             channel_layer = get_channel_layer()
 
@@ -234,30 +235,30 @@ async def crawl_wb(weibouser: WeiboUser, push=False):
 
 
 async def crawl_mirai():
-    rss = RsshubUtil("https://github.com/")
-    feed = rss.raw_parse("/mamoe/mirai/releases.atom")
+    rss_g = RsshubUtil("https://github.com/")
+    feed = rss_g.raw_parse("/mamoe/mirai/releases.atom")
     found_stable = False
     found_dev = False
-    with Redis(host="localhost", port=6379, decode_responses=True) as r:
-        stable_ver = r.get("MIRAI_STABLE_VERSION")
-        dev_ver = r.get("MIRAI_DEV_VERSION")
-        if feed and feed["items"]:
-            items = feed["items"]
-            while len(items) > 0:
-                item = items.pop(0)
-                title = item["title"]
-                if title.find("dev") != -1 and not found_dev:
-                    found_dev = True
-                    if dev_ver != title:
-                        requests.get(f"{os.getenv('JENKINS_SERVER')}/buildWithParameters?token={os.getenv('JENKINS_TOKEN')}")
-                    r.set("MIRAI_DEV_VERSION", title, ex=7200)
-                if title.find("dev") == -1 and not found_stable:
-                    found_stable = True
-                    if stable_ver != title:
-                        requests.get(f"{os.getenv('JENKINS_SERVER')}/buildWithParameters?token={os.getenv('JENKINS_TOKEN')}")
-                    r.set("MIRAI_STABLE_VERSION", title, ex=7200)
-                if found_stable and found_dev:
-                    break
+    r = Redis(host="localhost", port=6379, decode_responses=True)
+    stable_ver = r.get("MIRAI_STABLE_VERSION")
+    dev_ver = r.get("MIRAI_DEV_VERSION")
+    if feed and feed["items"]:
+        items = feed["items"]
+        while len(items) > 0:
+            item = items.pop(0)
+            title = item["title"]
+            if title.find("dev") != -1 and not found_dev:
+                found_dev = True
+                if dev_ver != title:
+                    requests.get(f"{os.getenv('JENKINS_SERVER')}/buildWithParameters?token={os.getenv('JENKINS_TOKEN')}")
+                r.set("MIRAI_DEV_VERSION", title, ex=7200)
+            if title.find("dev") == -1 and not found_stable:
+                found_stable = True
+                if stable_ver != title:
+                    requests.get(f"{os.getenv('JENKINS_SERVER')}/buildWithParameters?token={os.getenv('JENKINS_TOKEN')}")
+                r.set("MIRAI_STABLE_VERSION", title, ex=7200)
+            if found_stable and found_dev:
+                break
                 
 
 
@@ -291,26 +292,24 @@ async def e_crawl_wb():
 
 async def r_crawl_live():
     while True:
-        asyncio.create_task(e_crawl_live())
+        loop.create_task(e_crawl_live())
         await asyncio.sleep(300)
 
 
 async def r_crawl_wb():
     while True:
-        asyncio.create_task(e_crawl_wb())
+        loop.create_task(e_crawl_wb())
         await asyncio.sleep(300)
 
 
 async def r_crawl_mirai():
     while True:
-        asyncio.create_task(crawl_mirai())
+        loop.create_task(crawl_mirai())
         await asyncio.sleep(3600)
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    r1 = asyncio.create_task(r_crawl_live())
-    r2 = asyncio.create_task(r_crawl_wb())
-    r3 = asyncio.create_task(r_crawl_mirai())
-    asyncio.gather(r1, r2, r3, loop=loop)
+    r1 = loop.create_task(r_crawl_live())
+    r2 = loop.create_task(r_crawl_wb())
+    r3 = loop.create_task(r_crawl_mirai())
     loop.run_forever()

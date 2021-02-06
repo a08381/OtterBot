@@ -45,7 +45,7 @@ urlpatterns = [
     url(r'^login/', login),
     url(r'^register/', register),
     url(r'^logout/', logout),
-    url(r'^.*$', lambda x : HttpResponseRedirect('')),
+    url(r'^.*$', lambda x : HttpResponseRedirect('/')),
 ]
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()

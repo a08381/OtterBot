@@ -73,7 +73,7 @@ def get_weibotile_share(weibotile: WeiboTile, image: str, mode="json"):
     }
     res_data = tmp
     if mode == "text":
-        res_data = "[[CQ:share,url={},title={},content={},image={}]]".format(
+        res_data = "[CQ:share,url={},title={},content={},image={}]".format(
             tmp["url"], tmp["title"], tmp["content"], tmp["image"]
         )
     logging.debug("weibo_share")

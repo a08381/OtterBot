@@ -239,6 +239,7 @@ async def crawl_mirai():
     feed = rss_g.raw_parse("/mamoe/mirai/releases.atom")
     found_stable = False
     found_dev = False
+    differ = False
     r = Redis(host="localhost", port=6379, decode_responses=True)
     stable_ver = r.get("MIRAI_STABLE_VERSION")
     dev_ver = r.get("MIRAI_DEV_VERSION")
@@ -250,13 +251,15 @@ async def crawl_mirai():
             if title.find("dev") != -1 and not found_dev:
                 found_dev = True
                 if dev_ver != title:
-                    requests.get(f"{os.getenv('JENKINS_SERVER')}/buildWithParameters?token={os.getenv('JENKINS_TOKEN')}")
+                    differ = True
                 r.set("MIRAI_DEV_VERSION", title, ex=7200)
             if title.find("dev") == -1 and not found_stable:
                 found_stable = True
                 if stable_ver != title:
-                    requests.get(f"{os.getenv('JENKINS_SERVER')}/buildWithParameters?token={os.getenv('JENKINS_TOKEN')}")
+                    differ = True
                 r.set("MIRAI_STABLE_VERSION", title, ex=7200)
+            if differ:
+                requests.get("https://ci.yumc.pw/buildWithParameters?token=mirai_build_with_no_bcprov")
             if found_stable and found_dev:
                 break
                 

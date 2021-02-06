@@ -283,7 +283,7 @@ async def e_crawl_wb():
     for wbu in wbus:
         logging.info("Begin crawling {}".format(wbu.name))
         try:
-            await crawl_wb(wbu, False)
+            await crawl_wb(wbu, True)
         except requests.ReadTimeout as e:
             logging.error("crawling {} timeout".format(wbu.name))
         except Exception as e:

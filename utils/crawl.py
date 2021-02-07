@@ -235,7 +235,7 @@ async def crawl_wb(weibouser: WeiboUser, push=False):
 
 
 async def crawl_mirai():
-    rss_g = RsshubUtil("https://github.com/")
+    rss_g = RsshubUtil("https://github.com")
     feed = rss_g.raw_parse("/mamoe/mirai/releases.atom")
     found_stable = False
     found_dev = False
@@ -261,7 +261,7 @@ async def crawl_mirai():
                 stable_ver = title
                 r.set("MIRAISTABLEVERSION", stable_ver, ex=7200)
             if differ:
-                requests.get("https://ci.yumc.pw/buildWithParameters?token=mirai_build_with_no_bcprov")
+                requests.get("https://ci.yumc.pw/job/Mirai/job/Mirai/build?token=mirai_build_with_no_bcprov")
             if found_stable and found_dev:
                 break
                 

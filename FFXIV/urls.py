@@ -37,7 +37,7 @@ urlpatterns = [
     # path('hunt/', cache_page(60 * 2)()),
     path('hunt/', hunt),
     path("music/<str:str_type>", music),
-    path("mirai/version", mirai),
+    path("mirai/version/<str:str_type>", mirai),
     url(r'^oauth/qq/login/$', qq_login, name='qq_login'),
     url(r'^api/qqcallback', qq_check, name='qq_check'),
     # url(r'^oauth/qq/check/$', qq_check, name='qq_check'),

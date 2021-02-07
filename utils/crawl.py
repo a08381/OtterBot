@@ -241,8 +241,8 @@ async def crawl_mirai():
     found_dev = False
     differ = False
     r = Redis(host="localhost", port=6379, decode_responses=True)
-    stable_ver = r.get("MIRAI_STABLE_VERSION")
-    dev_ver = r.get("MIRAI_DEV_VERSION")
+    stable_ver = r.get("MIRAISTABLEVERSION")
+    dev_ver = r.get("MIRAIDEVVERSION")
     if feed and feed["items"]:
         items = feed["items"]
         while len(items) > 0:

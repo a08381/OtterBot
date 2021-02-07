@@ -7,6 +7,6 @@ def mirai(req: HttpRequest):
     stable = req.GET.get("stable", 1)
     r = Redis(host="localhost", port=6379, decode_responses=True)
     if stable == 1:
-        return HttpResponse(r.get("MIRAI_STABLE_VERSION"))
+        return HttpResponse(r.get("MIRAISTABLEVERSION"))
     else:
-        return HttpResponse(r.get("MIRAI_DEV_VERSION"))
+        return HttpResponse(r.get("MIRAIDEVVERSION"))

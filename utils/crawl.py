@@ -248,16 +248,18 @@ async def crawl_mirai():
         while len(items) > 0:
             item = items.pop(0)
             title = item["title"]
-            if title.find("dev") != -1 and not found_dev:
+            if title.find("dev") != -1 and title.find("publish") == -1 and not found_dev:
                 found_dev = True
                 if dev_ver != title:
                     differ = True
-                r.set("MIRAI_DEV_VERSION", title, ex=7200)
+                dev_ver = title
+                r.set("MIRAIDEVVERSION", dev_ver, ex=7200)
             if title.find("dev") == -1 and not found_stable:
                 found_stable = True
                 if stable_ver != title:
                     differ = True
-                r.set("MIRAI_STABLE_VERSION", title, ex=7200)
+                stable_ver = title
+                r.set("MIRAISTABLEVERSION", stable_ver, ex=7200)
             if differ:
                 requests.get("https://ci.yumc.pw/buildWithParameters?token=mirai_build_with_no_bcprov")
             if found_stable and found_dev:

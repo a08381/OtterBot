@@ -13,16 +13,6 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 
-def get_image_from_CQ(CQ_text):
-    if "url=" in CQ_text:
-        tmp = CQ_text
-        tmp = tmp[tmp.find("url=") : -1]
-        tmp = tmp.replace("url=", "")
-        img_url = tmp.replace("]", "")
-        return img_url
-    return None
-
-
 def upload_image(img_url, token=""):
     headers = {}
     if token:
@@ -57,6 +47,7 @@ def QQCommand_image(*args, **kwargs):
         receive_msg = receive["message"].replace("/image", "", 1).strip()
         msg_list = receive_msg.split(" ")
         second_command = msg_list[0]
+        image_already_exist = False
         if second_command == "" or second_command == "help":
             msg = " 禁止上传R18/NSFW图片：\n/image upload $category $image : 给类别$category上传图片\n/image $category : 随机返回一张$category的图片\n/image del $name : 删除名为$name的图片\n查看图库：http://botapi.dead-war.cn/image/\nPowered by https://sm.ms"
         elif second_command == "upload":
@@ -71,7 +62,7 @@ def QQCommand_image(*args, **kwargs):
                 else:
                     category = msg_list[1].strip().strip("$")
                     CQ_text = msg_list[2].strip()
-                    img_url = get_image_from_CQ(CQ_text)
+                    img_url = get_CQ_image(CQ_text)
                     if not img_url:
                         msg = "未发现图片信息"
                     elif not category:
@@ -97,6 +88,7 @@ def QQCommand_image(*args, **kwargs):
                                     name = name[name.find("/") + 1 :]
                                 try:
                                     img = Image.objects.get(domain=domain, path=path)
+                                    image_already_exist = True
                                     msg = '图片"{}"已存在于类别"{}"之中，无法重复上传'.format(
                                         img.name, img.key
                                     )
@@ -113,7 +105,8 @@ def QQCommand_image(*args, **kwargs):
                                         add_by_bot=bot,
                                     )
                                 img.save()
-                                msg = '图片"{}"上传至类别"{}"成功'.format(img.name, img.key)
+                                if not image_already_exist:
+                                    msg = '图片"{}"上传至类别"{}"成功'.format(img.name, img.key)
                         else:
                             img_info = img_info["data"]
                             url = img_info.get("url", "")

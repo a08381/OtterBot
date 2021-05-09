@@ -11,7 +11,7 @@ requests==2.25.1
 feedparser==5.2.1
 dice==2.3.5
 jieba==0.39
-Django==2.2.18
+Django==2.2.20
 mysqlclient==1.4.6
 beautifulsoup4[lxml]==4.9.3
 gevent_socketio==0.3.6

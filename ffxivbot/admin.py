@@ -1,4 +1,5 @@
 from django.contrib import admin
+import json
 from .models import *
 
 # Register your models here.
@@ -11,8 +12,8 @@ class QQGroupAdmin(admin.ModelAdmin):
 
 class CustomReplyAdmin(admin.ModelAdmin):
     list_display = ("group", "key", "value")
-    list_filter = ["group__group_id"]
     search_fields = ["group__group_id", "key", "value"]
+    raw_id_fields = ["group"]
 
 
 class ChatMessageAdmin(admin.ModelAdmin):
@@ -102,8 +103,8 @@ class SorryGIFAdmin(admin.ModelAdmin):
 
 
 class QQUserAdmin(admin.ModelAdmin):
-    list_display = ("user_id", "bot_token")
-    search_fields = ["user_id"]
+    list_display = ("user_id", "nickname", "dbuser")
+    search_fields = ["user_id", "nickname"]
 
 
 class HsoAlterNameAdmin(admin.ModelAdmin):
@@ -161,7 +162,7 @@ class MonsterAdmin(admin.ModelAdmin):
 
 class HuntLogAdmin(admin.ModelAdmin):
     list_display = ["monster", "hunt_group", "server", "log_type", "time"]
-    search_fields = ["monster ", "hunt_group", "log_type"]
+    search_fields = ["hunt_group__group__group_id"]
     list_filter = ["monster", "hunt_group", "server", "log_type"]
     raw_id_fields = ["hunt_group"]
 
@@ -192,9 +193,10 @@ class TomonBotAdmin(admin.ModelAdmin):
 
 
 class CommandLogAdmin(admin.ModelAdmin):
-    list_display = ["time", "command", "user_id", "bot_id", "group_id"]
+    list_display = ["time", "command", "message_info", "user_id", "bot_id", "group_id"]
     search_fields = ["command", "user_id", "bot_id", "group_id"]
     list_filter = ["command"]
+
 
 class HousingPresetAdmin(admin.ModelAdmin):
     list_display = ["items_hash", "name", "tags",  "uploader"]

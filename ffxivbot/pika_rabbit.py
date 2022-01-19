@@ -182,12 +182,11 @@ class PikaConsumer(object):
             api_caller = ApiCaller(bot)
             event_handler = EventHandler(bot, api_caller)
             config = json.load(open(CONFIG_PATH, encoding="utf-8"))
-            already_reply = False
             if (
                 receive["post_type"] == "meta_event"
                 and receive["meta_event_type"] == "heartbeat"
             ):
-                LOGGER.debug(
+                LOGGER.info(
                     "bot:{} Event heartbeat at time:{}".format(
                         self_id, int(time.time())
                     )
@@ -212,7 +211,7 @@ class PikaConsumer(object):
         self.acknowledge_message(basic_deliver.delivery_tag)
 
     def acknowledge_message(self, delivery_tag):
-        LOGGER.info("Pid:%s Acknowledging message %s", os.getpid(), delivery_tag)
+        LOGGER.debug("Pid:%s Acknowledging message %s", os.getpid(), delivery_tag)
         self._channel.basic_ack(delivery_tag)
 
     def stop_consuming(self):

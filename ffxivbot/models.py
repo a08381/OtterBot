@@ -301,7 +301,7 @@ class QQUser(models.Model):
     dbuser = models.OneToOneField(
         User, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="qquser"
     )
-    user_id = models.CharField(max_length=64, unique=True)
+    user_id = models.CharField(db_index=True, max_length=64, unique=True)
     bot_token = models.CharField(max_length=16, blank=True)
     able_to_upload_image = models.BooleanField(default=True)
     last_api_time = models.BigIntegerField(default=0)
@@ -388,6 +388,10 @@ class Image(models.Model):
             self.path = o.path
             self.url = url
             self.save(update_fields=["domain", "path", "url"])
+        if "i.loli.io" in self.domain or "i.loli.io" in self.url:
+            self.domain = self.domain.replace("i.loli.io", "i.loli.net")
+            self.url = self.url.replace("i.loli.io", "i.loli.net")
+            self.save(update_fields=["domain", "url"])
         return self.url if self.url else (self.domain + self.path)
 
     def image_tag(self):
@@ -493,6 +497,11 @@ class CommandLog(models.Model):
     bot_id = models.CharField(max_length=16)
     user_id = models.CharField(max_length=64)
     group_id = models.CharField(max_length=64)
+
+    @property
+    def message_info(self):
+        j = json.loads(self.message)
+        return j.get("params", {}).get("message", "")
 
 
 class HuntGroup(models.Model):

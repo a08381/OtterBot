@@ -12,6 +12,7 @@ import base64
 import random
 import math
 import difflib
+import redis
 from bs4 import BeautifulSoup
 from PIL import ImageFont, ImageDraw
 from PIL import Image as PILImage
@@ -230,7 +231,6 @@ def getSpecificWeatherTimes(
         now_time += 8 * 175
     return times
 
-
 def crawl_dps(boss, job, day=0, CN_source=False, dps_type="adps"):
     print("boss:{} job:{} day:{}".format(boss, job, day))
     fflogs_url = "https://www.fflogs.com/zone/statistics/table/{}/dps/{}/{}/8/{}/100/1000/7/{}/Global/{}/All/0/normalized/single/0/-1/?keystone=15&dpstype={}".format(
@@ -243,39 +243,71 @@ def crawl_dps(boss, job, day=0, CN_source=False, dps_type="adps"):
         dps_type,
     )
     print("fflogs url:{}".format(fflogs_url))
-    s = requests.Session()
-    s.headers.update({"referer": "https://www.fflogs.com"})
-    r = s.get(url=fflogs_url, timeout=5)
-    tot_days = 0
-    percentage_list = [10, 25, 50, 75, 95, 99, 100]
-    atk_res = {}
-    for perc in percentage_list:
-        if perc == 100:
-            re_str = "series" + r".data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)"
-        else:
-            re_str = "series%s" % (perc) + r".data.push\([+-]?(0|([1-9]\d*))(\.\d+)?\)"
-        ptn = re.compile(re_str)
-        find_res = ptn.findall(r.text)
-        if CN_source and boss.cn_offset:
-            find_res = find_res[boss.cn_offset :]
-        # print("found {} atk_res".format(len(find_res)))
-        try:
-            if day == -1:
-                day = len(find_res) - 1
-            atk_res[str(perc)] = find_res[day]
-        except IndexError as e:
-            day = len(find_res)
-            if day:
-                atk_res[str(perc)] = find_res[-1]
-            else:
-                return "No data found"
-        ss = atk_res[str(perc)][1] + atk_res[str(perc)][2]
-        if ss == "":
-            ss = "0"
-        atk = float(ss)
-        atk_res[str(perc)] = atk
-        atk_res["day"] = day
-    return atk_res
+    redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
+    hash_key = "fflogs|{}".format(fflogs_url)
+    cached_stat_list = redis_client.get(hash_key)
+    if not cached_stat_list:
+        s = requests.Session()
+        s.headers.update({"referer": "https://www.fflogs.com"})
+        r = s.get(url=fflogs_url, timeout=5)
+        percentage_list = [10, 25, 50, 75, 95, 99, 100]
+        statistics = {}
+        for percentage in percentage_list:
+            re_str = "series{}".format("" if percentage == 100 else percentage) + r".data.push\([+-]?(0|(?:[1-9]\d*)(?:\.\d+)?)\)"
+            ptn = re.compile(re_str)
+            find_res = ptn.findall(r.text)
+            statistics[str(percentage)] = list(map(lambda x: float(x), find_res))
+        total_length = len(statistics['100'])
+        for percentage in percentage_list:
+            assert len(statistics[str(percentage)]) == total_length, "Length of parsed dps aren't consistent"
+        l = 0
+        r = total_length - 1
+        def all_0(stat, idx):
+            sum_dps = 0
+            for perc in percentage_list:
+                sum_dps += stat[str(perc)][idx]
+            return sum_dps == 0
+        while l < total_length and all_0(statistics, l):
+            l += 1
+        while r >= 0 and all_0(statistics, r):
+            r -= 1
+        if l > r or l >= total_length or r < 0:
+            return "No data found"
+        stat_list = []
+        for idx, (p10, p25, p50, p75, p95, p99, p100) in enumerate(zip(
+                statistics['10'][l:r+1],
+                statistics['25'][l:r+1],
+                statistics['50'][l:r+1],
+                statistics['75'][l:r+1],
+                statistics['95'][l:r+1],
+                statistics['99'][l:r+1],
+                statistics['100'][l:r+1],
+            ), 1):
+            stat_list.append({
+                    'day': idx,
+                    '10': p10,
+                    '25': p25,
+                    '50': p50,
+                    '75': p75,
+                    '95': p95,
+                    '99': p99,
+                    '100': p100,
+                })
+        redis_client.set(
+            hash_key,
+            json.dumps(stat_list),
+            ex=3600,
+        )
+    else:
+        stat_list = json.loads(cached_stat_list)
+
+    if not stat_list:
+        return "No data found"
+
+    if day == -1 or day >= len(stat_list):
+        return stat_list[-1]
+
+    return stat_list[day]
 
 
 def get_item_info(data, lang="", item_url=""):
@@ -373,7 +405,7 @@ def search_item(name, FF14WIKI_BASE_URL, FF14WIKI_API_URL, url_quote=True):
             "image": "",
         }
     except json.decoder.JSONDecodeError:
-        print(r.text)
+        traceback.print_exc()
 
     print(res_data)
     return res_data
@@ -418,17 +450,33 @@ def check_raid(api_url, raid_data, raid_name, wol_name, server_name):
 
 
 def text2img(text):
+    text = text.strip()
+    # print("=====\n{}\n=====".format(text))
     font = ImageFont.truetype(
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resources/font/msyh.ttc",
         ),
         36,
     )
-    border = 20
-    img_width, img_height = font.getsize_multiline(text)
+    lines = text.split("\n")
+    # while "" in lines:
+    #     lines.remove("")
+    # text = "\n".join(lines)
+    img_height = 0
+    last_height = 0
+    img_width = 0
+    border = 10
+    _, height = font.getsize(text)
+    for line in lines:
+        # print("{}:\t{}".format(img_height + border, line))
+        width, _ = font.getsize(line)
+        img_width = max(img_width, width)
+        img_height += height
     img = PILImage.new(
         "RGB", (img_width + 2 * border, img_height + 2 * border), color="white"
     )
+
+    # print((img_width + 2 * border, img_height + 2 * border))
     d = ImageDraw.Draw(img)
     d.text((border, border), text, font=font, fill="#000000")
     output_buffer = io.BytesIO()
@@ -436,6 +484,7 @@ def text2img(text):
     byte_data = output_buffer.getvalue()
     base64_str = base64.b64encode(byte_data).decode("utf-8")
     msg = "[CQ:image,file=base64://{}]\n".format(base64_str)
+    # print("=====\nbase64://{}\n=====".format(base64_str))
     return msg
 
 

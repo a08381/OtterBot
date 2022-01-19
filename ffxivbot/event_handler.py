@@ -1,4 +1,5 @@
 import time
+from datetime import timedelta
 import json
 from .models import QQGroup, QQBot, QQUser
 from .api_caller import ApiCaller
@@ -21,12 +22,12 @@ class EventHandler(object):
         user_id = receive["user_id"]
         self_id = receive["self_id"]
         if QQBot.objects.filter(user_id=user_id).exists():
-            raise Exception(
-                "{} reply from another bot:{}".format(self_id, user_id)
-            )
+            # print("{} reply from another bot:{}".format(receive["self_id"], user_id))
+            return
         (user, created) = QQUser.objects.get_or_create(user_id=user_id)
         if 0 < time.time() < user.ban_till:
-            raise Exception("User {} get banned till {}".format(user_id, user.ban_till))
+            delta = timedelta(seconds= user.ban_till - time.time())
+            raise Exception("User {} get banned for {}".format(user_id, delta))
 
         # replace alter commands
         for (alter_command, command) in handlers.alter_commands.items():
@@ -48,6 +49,8 @@ class EventHandler(object):
         # Handle QQGroupCommand_*
         if receive["message_type"] == "group":
             group_id = receive["group_id"]
+            # get sender's user_info
+            user_info = receive.get("sender")
             (group, group_created) = QQGroup.objects.get_or_create(group_id=group_id)
             # self-ban in group
             if int(time.time()) < group.ban_till:
@@ -97,8 +100,6 @@ class EventHandler(object):
                         post_type=receive.get("reply_api_type", "websocket"),
                         channel_id=receive.get("channel_id", ""),
                     )
-                # get sender's user_info
-                user_info = receive.get("sender")
                 if not user_info or ("role" not in user_info):
                     user_info = None
                 if member_list and not user_info:
@@ -237,20 +238,20 @@ class EventHandler(object):
             )
         # Handle /ping
         if receive["message"].startswith("/ping"):
-            time_from_receive = receive["time"]
-            if time_from_receive > 3000000000:
-                time_from_receive = time_from_receive / 1000
+            time_receive = receive["time"]
+            if time_receive > 3000000000:
+                time_receive = time_receive / 1000
             msg = ""
             if "detail" in receive["message"]:
                 msg += "[CQ:at,qq={}]\nclient->server: {:.2f}s\nserver->rabbitmq: {:.2f}s\nhandle init: {:.2f}s".format(
                     receive["user_id"],
-                    receive["consumer_time"] - time_from_receive,
+                    receive["consumer_time"] - time_receive,
                     receive["pika_time"] - receive["consumer_time"],
                     time.time() - receive["pika_time"],
                 )
             else:
                 msg += "[CQ:at,qq={}] {:.2f}s".format(
-                    receive["user_id"], time.time() - time_from_receive
+                    receive["user_id"], time.time() - time_receive
                 )
             msg = msg.strip()
             # print(("{} calling command: {}".format(user_id, "/ping")))
@@ -319,7 +320,7 @@ class EventHandler(object):
                     )
 
     def on_request(self, receive, **kwargs):
-        print("on_request:{}".format(json.dumps(receive)))
+        # print("on_request:{}".format(json.dumps(receive)))
         bot = self.bot
         config = kwargs.get("config")
         config_group_id = config["CONFIG_GROUP_ID"]
@@ -328,9 +329,9 @@ class EventHandler(object):
             flag = receive["flag"]
             if bot.auto_accept_friend:
                 reply_data = {"flag": flag, "approve": True}
-                print(
-                    "calling set_friend_add_request:{}".format(json.dumps(reply_data))
-                )
+                # print(
+                #     "calling set_friend_add_request:{}".format(json.dumps(reply_data))
+                # )
                 self.api_caller.call_api(
                     "set_friend_add_request",
                     reply_data,
@@ -345,7 +346,7 @@ class EventHandler(object):
                     "sub_type": "invite",
                     "approve": True,
                 }
-                print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
+                # print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
                 self.api_caller.call_api(
                     "set_group_add_request",
                     reply_data,
@@ -361,7 +362,7 @@ class EventHandler(object):
             qs = QQBot.objects.filter(owner_id=user_id)
             if qs.count() > 0:
                 reply_data = {"flag": flag, "sub_type": "add", "approve": True}
-                print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
+                # print("calling set_group_add_request:{}".format(json.dumps(reply_data)))
                 self.api_caller.call_api(
                     "set_group_add_request",
                     reply_data,
@@ -384,8 +385,10 @@ class EventHandler(object):
     def on_notice(self, receive, **kwargs):
         # print("on_notice:{}".format(json.dumps(receive)))
         bot = self.bot
-        if receive.get("notice_type") == "group_increase" or (
-            receive.get("notice_type") == "group"
+        notice_type = receive.get("notice_type", "")
+        sub_type = receive.get("sub_type", "")
+        if notice_type == "group_increase" or (
+            notice_type == "group"
             and receive.get("sub_type") == "increase"
         ):
             group_id = receive["group_id"]
@@ -408,11 +411,18 @@ class EventHandler(object):
             except Exception as e:
                 traceback.print_exc()
 
-        if receive.get("notice_type") == "group_admin" or (
-            receive.get("notice_type") == "group" and receive.get("sub_type") == "admin"
+        if notice_type == "group_admin" or (
+            notice_type == "group" and sub_type == "admin"
         ):
             self.api_caller.update_group_member_list(
                 receive["group_id"],
                 post_type=receive.get("reply_api_type", "websocket"),
                 channel_id=receive.get("channel_id", ""),
             )
+        if notice_type == "message_reactions_updated":
+            guild_id = receive.get("guild_id", "")
+            channel_id = receive.get("channel_id", "")
+            operator_id = receive.get("operator_id", "")
+            print(f"=== {guild_id}|{channel_id}: {operator_id} ===")
+            print(json.dumps(receive, indent=2))
+

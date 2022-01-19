@@ -15,15 +15,15 @@ import traceback
 def search_word(word):
     urlword = urllib.parse.quote(word)
     url = "https://hibi.shadniw.ml/api/netease/?type=search&s={}".format(urlword)
-    r = requests.get(url=url)
+    r = requests.get(url=url, timeout=3)
     jres = json.loads(r.text)
     status_code = jres["code"]
     if int(status_code) == 200 and int(jres["result"]["songCount"]) > 0:
         songs = jres["result"]["songs"]
         song = songs[0]
         song_id = song["id"]
-        url = "https://api.imjad.cn/cloudmusic/?type=song&id={}".format(song_id)
-        r = requests.get(url=url)
+        url = "https://hibi.shadniw.ml/api/netease/?type=song&id={}".format(song_id)
+        r = requests.get(url=url, timeout=3)
         song_res = json.loads(r.text)
         song_data = song_res["data"][0]
         msg = [
@@ -57,7 +57,8 @@ def QQCommand_music(*args, **kwargs):
             msg = "default msg"
             if message_content.find("help") == 0 or message_content == "":
                 msg = (
-                    "/music $name : 搜索关键词$name的歌曲\n" + "Powered by https://api.imjad.cn"
+                    "/music $name : 搜索关键词$name的歌曲\n"
+                    "Powered by https://api.imjad.cn, https://github.com/mixmoe/HibiAPI "
                 )
             else:
                 word = message_content

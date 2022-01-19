@@ -3,9 +3,6 @@ from .QQGroupEventHandler import QQGroupEventHandler
 
 commands = {
     "/cat": "云吸猫",
-    "/gakki": "云吸gakki",
-    "/10": "云吸十元",
-    "/bird": "云吸飞鸟",
     "/waifu": "云吸二次元老婆",
     "/image": "獭獭传图",
     "/comment": "给作者留言",
@@ -37,7 +34,7 @@ commands = {
     "/bot": "机器人相关功能",
     "/ifttt": "IFTTT推送系统",
     "/akhr": "罗德岛公开招募",
-    "/share": "发送微博分享",
+    #"/share": "发送微博分享",
     # "/trash":"你是什么垃圾？",
     "/shorten": "微博短链",
     "/mxh": '梅溪湖cp短打生成器（"/mxh 海德林 佐迪亚克"）',
@@ -123,17 +120,14 @@ from .QQCommand_weather import QQCommand_weather
 from .QQCommand_genshin import QQCommand_genshin
 
 # Universal Commands
-from .QQCommand_10 import QQCommand_10
 from .QQCommand_about import QQCommand_about
 from .QQCommand_abv import QQCommand_abv
 from .QQCommand_anime import QQCommand_anime
-from .QQCommand_bird import QQCommand_bird
 from .QQCommand_cat import QQCommand_cat
 from .QQCommand_chp import QQCommand_chp
 from .QQCommand_du import QQCommand_du
 from .QQCommand_dice import QQCommand_dice
 from .QQCommand_duilian import QQCommand_duilian
-from .QQCommand_gakki import QQCommand_gakki
 from .QQCommand_gif import QQCommand_gif
 from .QQCommand_hhsh import QQCommand_hhsh  # be sure to come before /hh
 from .QQCommand_hh import QQCommand_hh  # FFXIV Command
@@ -148,7 +142,7 @@ from .QQCommand_luck import QQCommand_luck
 from .QQCommand_mxh import QQCommand_mxh
 from .QQCommand_pixiv import QQCommand_pixiv
 from .QQCommand_random import QQCommand_random
-from .QQCommand_share import QQCommand_share
+#from .QQCommand_share import QQCommand_share
 from .QQCommand_shorten import QQCommand_shorten
 from .QQCommand_tex import QQCommand_tex
 from .QQCommand_trash import QQCommand_trash

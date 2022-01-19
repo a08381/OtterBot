@@ -74,8 +74,8 @@ def QQCommand_yiff(*args, **kwargs):
                         group_commands = json.loads(group.commands)
                         if group_commands.get("r18", "disable") == "disable":
                             flag = is_nsfw(img)
-                    destruct = 1 if flag else 0
-                    msg = "[CQ:image,file={},destruct={}]".format(img["file"]["url"], destruct)
+                    destruct = ",type=flash" if flag else ""
+                    msg = "[CQ:image,file={}{}]".format(img["file"]["url"], destruct)
 
         reply_action = reply_message_action(receive, msg)
         action_list.append(reply_action)

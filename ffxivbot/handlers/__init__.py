@@ -15,7 +15,7 @@ commands = {
     "/gif": '生成沙雕图（"/gif help"）',
     "/dice": 'DnD掷骰子（"/dice 3d12"）',
     "/pixiv": 'Pixiv相关功能（"/pixiv help"）',
-    # "/music":"网易云音乐搜索（\"/music 届不到的恋\"）",
+    "/music":"网易云音乐搜索（\"/music 届不到的恋\"）",
     "/duilian": '对联（"/duilian 稻花香里说丰年"）',
     "/tex": '生成tex图片（"/tex e^{\\pi i}+1=0"）',
     "/gate": '挖宝选门（"/gate 3"）',
@@ -94,7 +94,7 @@ alter_commands = {
     "/信念": "/fsx 信念",
     "/坚韧": "/fsx 坚韧",
     "/直击": "/fsx 直击",
-    "/暖暖":"/nuannuan",
+    "/暖暖": "/nuannuan",
     "/天气": "/weather",
     "/宝图": "/treasure",
     "/nuannuan": "/nuannuan text",
@@ -138,7 +138,7 @@ from .QQCommand_image import QQCommand_image
 from .QQCommand_luck import QQCommand_luck
 
 # from .QQCommand_joke import QQCommand_joke
-# from .QQCommand_music import QQCommand_music
+from .QQCommand_music import QQCommand_music
 from .QQCommand_mxh import QQCommand_mxh
 from .QQCommand_pixiv import QQCommand_pixiv
 from .QQCommand_random import QQCommand_random

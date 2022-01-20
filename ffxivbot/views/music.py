@@ -52,7 +52,7 @@ def music(req: HttpRequest, str_type: str):
         try:
             if response.status_code == 200:
                 music_dict = response.json()
-                music_album = music_dict["data"][0]
+                music_album = music_dict["songs"][0]
                 if music_album["code"] == 200:
                     return HttpResponseRedirect(music_album["al"]["picUrl"])
         except KeyError:

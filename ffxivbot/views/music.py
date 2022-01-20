@@ -12,23 +12,7 @@ CONFIG_PATH = os.environ.get(
     "FFXIVBOT_CONFIG", os.path.join(FFXIVBOT_ROOT, "ffxivbot/config.json")
 )
 config = json.load(open(CONFIG_PATH, encoding="utf-8"))
-
-NETEASE_API_URL = config.get("NETEASE_API_URL", "http://localhost:3000")
-NETEASE_USERNAME = config.get("NETEASE_USERNAME", "")
-NETEASE_PASSWORD = config.get("NETEASE_PASSWORD", "")
-
-if NETEASE_USERNAME != "":
-    session = requests.session()
-    try:
-        session.get(
-            "{}/login?email={}&password={}".format(
-                NETEASE_API_URL, NETEASE_USERNAME, NETEASE_PASSWORD
-            ), timeout=5
-        )
-    except Exception:
-        pass
-else:
-    session = requests
+NETEASE_API_URL = "https://hibi.shadniw.ml/api/netease"
 
 
 @csrf_exempt
@@ -36,8 +20,8 @@ def music(req: HttpRequest, str_type: str):
     lower = str_type.lower()
     if lower == "url":
         ids = req.GET.get("id", 0)
-        response = session.get(
-            "{}/song/url?id={}".format(NETEASE_API_URL, ids), timeout=(5, 10)
+        response = requests.get(
+            "{}/song?id={}".format(NETEASE_API_URL, ids), timeout=(5, 10)
         )
         try:
             if response.status_code == 200:
@@ -49,7 +33,7 @@ def music(req: HttpRequest, str_type: str):
             return HttpResponse("KeyError", status=500)
     elif lower == "search":
         keywords = req.GET.get("keywords", "")
-        response = session.get(
+        response = requests.get(
             "{}/search?keywords={}".format(NETEASE_API_URL, keywords), timeout=(5, 10)
         )
         try:
@@ -58,6 +42,19 @@ def music(req: HttpRequest, str_type: str):
                 music_url = music_dict["data"][0]
                 if music_url["code"] == 200:
                     return JsonResponse(music_url)
+        except KeyError:
+            return HttpResponse("KeyError", status=500)
+    elif lower == "album":
+        ids = req.GET.get("id", "")
+        response = requests.get(
+            "{}/detail?id={}".format(NETEASE_API_URL, ids), timeout=(5, 10)
+        )
+        try:
+            if response.status_code == 200:
+                music_dict = response.json()
+                music_album = music_dict["data"][0]
+                if music_album["code"] == 200:
+                    return HttpResponseRedirect(music_album["al"]["picUrl"])
         except KeyError:
             return HttpResponse("KeyError", status=500)
 

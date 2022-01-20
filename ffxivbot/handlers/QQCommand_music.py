@@ -14,24 +14,26 @@ import traceback
 
 def search_word(word):
     urlword = urllib.parse.quote(word)
-    url = "https://hibi.shadniw.ml/api/netease/?type=search&s={}".format(urlword)
+    url = "https://hibi.shadniw.ml/api/netease/search?s={}".format(urlword)
     r = requests.get(url=url, timeout=3)
     jres = json.loads(r.text)
     status_code = jres["code"]
     if int(status_code) == 200 and int(jres["result"]["songCount"]) > 0:
         songs = jres["result"]["songs"]
         song = songs[0]
+        song_name = song["name"]
         song_id = song["id"]
-        url = "https://hibi.shadniw.ml/api/netease/?type=song&id={}".format(song_id)
-        r = requests.get(url=url, timeout=3)
-        song_res = json.loads(r.text)
-        song_data = song_res["data"][0]
+        song_artists = "/".join([ar["name"] for ar in song["ar"]])
         msg = [
             {
                 "type": "music",
                 "data": {
-                    "type": "163",
-                    "id": "{}".format(song_id)
+                    "type": "custom",
+                    "url": "https://music.163.com/#/song?id={}".format(song_id),
+                    "audio": "https://botapi.dead-war.cn/music/url?id={}".format(song_id),
+                    "image": "https://botapi.dead-war.cn/music/album?id={}".format(song_id),
+                    "title": song_name,
+                    "content": song_artists
                 },
             }
         ]
@@ -43,9 +45,6 @@ def search_word(word):
 def QQCommand_music(*args, **kwargs):
     try:
         global_config = kwargs["global_config"]
-        QQ_BASE_URL = global_config["QQ_BASE_URL"]
-        FF14WIKI_API_URL = global_config["FF14WIKI_API_URL"]
-        FF14WIKI_BASE_URL = global_config["FF14WIKI_BASE_URL"]
         action_list = []
         receive = kwargs["receive"]
 

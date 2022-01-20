@@ -26,8 +26,8 @@ def music(req: HttpRequest, str_type: str):
         try:
             if response.status_code == 200:
                 music_dict = response.json()
-                music_url = music_dict["data"][0]
-                if music_url["code"] == 200:
+                if music_dict["code"] == 200:
+                    music_url = music_dict["data"][0]
                     return HttpResponseRedirect(music_url["url"])
         except KeyError:
             return HttpResponse("KeyError", status=500)
@@ -39,8 +39,8 @@ def music(req: HttpRequest, str_type: str):
         try:
             if response.status_code == 200:
                 music_dict = response.json()
-                music_url = music_dict["data"][0]
-                if music_url["code"] == 200:
+                if music_dict["code"] == 200:
+                    music_url = music_dict["data"][0]
                     return JsonResponse(music_url)
         except KeyError:
             return HttpResponse("KeyError", status=500)
@@ -52,8 +52,8 @@ def music(req: HttpRequest, str_type: str):
         try:
             if response.status_code == 200:
                 music_dict = response.json()
-                music_album = music_dict["result"]["songs"][0]
-                if music_album["code"] == 200:
+                if music_dict["code"] == 200:
+                    music_album = music_dict["result"]["songs"][0]
                     return HttpResponseRedirect(music_album["al"]["picUrl"])
         except KeyError:
             return HttpResponse("KeyError", status=500)

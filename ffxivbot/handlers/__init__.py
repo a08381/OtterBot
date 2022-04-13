@@ -19,17 +19,18 @@ commands = {
     "/duilian": '对联（"/duilian 稻花香里说丰年"）',
     "/tex": '生成tex图片（"/tex e^{\\pi i}+1=0"）',
     "/gate": '挖宝选门（"/gate 3"）',
-    "/treasure": "宝图搜寻",
+    #"/treasure": "宝图搜寻",
     "/search": '查询物品("/search 神龙")',
     "/market": '交易板数据("/market item 2级刚力之幻药")',
     "/weather": '天气信息("/weather 优雷卡恒冰之地")',
     "/fsx": '副属性计算（"/fsx 直击"）',
     "/dps": 'DPS排名（"/dps 8s 骑士"）',
+    #"/etro": '狒狒套装（"/etro <套装ID>"）',
     "/raid": '零式英雄榜（"/raid 蓝色裂痕 萌芽池"）',
     "/quest": '任务查询("/quest 狂乱前奏")',
     "/nuannuan": "本周金蝶暖暖作业",
-    "/genshin": "原神圣遗物评分",
-    "/hso": "好色哦",
+    #"/genshin": "原神圣遗物评分",
+    #"/hso": "好色哦",
     "/hhsh": "好好说话",
     "/bot": "机器人相关功能",
     "/ifttt": "IFTTT推送系统",
@@ -48,6 +49,7 @@ commands = {
 
 group_commands = {
     "/group": "群相关功能控制",
+    "/sonar": "Sonar 推送相关设置",
     "/welcome": "设置欢迎语",
     "/custom_reply": "添加自定义命令",
     "/repeat_ban": "复读姬口球系统",
@@ -96,7 +98,7 @@ alter_commands = {
     "/直击": "/fsx 直击",
     "/暖暖": "/nuannuan",
     "/天气": "/weather",
-    "/宝图": "/treasure",
+    #"/宝图": "/treasure",
     "/nuannuan": "/nuannuan text",
     "/nn": "/nuannuan",
     "/mitem": "/market item",
@@ -105,6 +107,7 @@ alter_commands = {
 
 # FFXIV Commands
 from .QQCommand_dps import QQCommand_dps
+from .QQCommand_etro import QQCommand_etro
 from .QQCommand_fsx import QQCommand_fsx
 from .QQCommand_gate import QQCommand_gate
 from .QQCommand_market import QQCommand_market
@@ -113,7 +116,7 @@ from .QQCommand_ofish import QQCommand_ofish
 from .QQCommand_quest import QQCommand_quest
 from .QQCommand_raid import QQCommand_raid
 from .QQCommand_search import QQCommand_search
-from .QQCommand_treasure import QQCommand_treasure
+#from .QQCommand_treasure import QQCommand_treasure
 from .QQCommand_weather import QQCommand_weather
 
 # Genshin Commands
@@ -158,6 +161,7 @@ from .arknights.QQCommand_akhr import QQCommand_akhr
 
 # Group Commands
 from .QQGroupCommand_group import QQGroupCommand_group
+from .QQGroupCommand_sonar import QQGroupCommand_sonar
 from .QQGroupCommand_welcome import QQGroupCommand_welcome
 from .QQGroupCommand_custom_reply import QQGroupCommand_custom_reply
 from .QQGroupCommand_repeat_ban import QQGroupCommand_repeat_ban

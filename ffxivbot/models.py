@@ -111,6 +111,8 @@ class QQGroup(models.Model):
     server = models.ForeignKey(
         Server, on_delete=models.DO_NOTHING, blank=True, null=True
     )
+    sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_groups", blank=True)
+    sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
 
     def __str__(self):
         return self.group_id
@@ -247,6 +249,11 @@ class QQBot(models.Model):
     command_stat = models.TextField(default="{}")
     share_banned = models.BooleanField(default=False)
     img_banned = models.BooleanField(default=False)
+    commands = models.TextField(default="{}")
+    sonar = models.BooleanField(default=False)
+    sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
+    sonar_sub_groups = models.ManyToManyField(QQGroup, related_name="sonar_sub_by_bots", blank=True)
+    sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_bots", blank=True)
 
     def __str__(self):
         return self.name
@@ -536,6 +543,7 @@ class Monster(models.Model):
     first_pop_cooldown = models.IntegerField(default=0)
     info = models.CharField(default="", max_length=128)
     status = models.TextField(default="{}")
+    key = models.IntegerField(default=0)
 
     def spawn_cd_hour(self):
         return self.spawn_cooldown // 3600
@@ -556,20 +564,23 @@ class HuntLog(models.Model):
         null=True,
     )
     hunt_group = models.ForeignKey(
-        HuntGroup, on_delete=models.CASCADE, related_name="hunt_log"
+        HuntGroup, on_delete=models.CASCADE, related_name="hunt_log",
+        null=True, blank=True
     )
     server = models.ForeignKey(
-        Server, on_delete=models.CASCADE, related_name="hunt_log"
+        Server, on_delete=models.CASCADE, related_name="hunt_log",
+        null=True, blank=True
     )
+    instance_id = models.IntegerField(default=0, blank=True, null=True)
     log_type = models.CharField(default="", max_length=16)
     time = models.BigIntegerField(default=0)
 
     def __str__(self):
-        return "{}-{}".format(self.server, self.monster)
+        return "{}_{}_{}".format(self.server, self.monster, self.instance_id)
 
     def get_info(self):
-        return "HuntLog#{}: {}-{} {}".format(
-            self.id, self.server, self.monster, self.log_type
+        return "HuntLog#{}: {}_{}_{} {}".format(
+            self.id, self.server, self.monster, self.instance_id, self.log_type
         )
 
 

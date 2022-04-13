@@ -1,6 +1,5 @@
 from .tata import tata
 from .quest import quest
-from .quest_tooltip import quest_tooltip
 from .api import api
 from .housing_api import housing_api
 from .qqpost import qqpost
@@ -14,3 +13,4 @@ from .login import login
 from .register import register
 from .logout import logout
 from .mirai import mirai
+from .dalamud_feedback import dalamud_feedback

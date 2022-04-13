@@ -71,6 +71,7 @@ class QQBotAdmin(admin.ModelAdmin):
         "auto_accept_invite",
         "owner_id",
     )
+    raw_id_fields = ["sonar_sub_groups"]
     search_fields = ["name", "user_id", "owner_id"]
 
 
@@ -95,7 +96,7 @@ class CommentAdmin(admin.ModelAdmin):
 
 
 class ServerAdmin(admin.ModelAdmin):
-    list_display = ("name", "areaId", "groupId", "alter_names")
+    list_display = ("name", "worldId", "areaId", "groupId", "alter_names")
 
 
 class SorryGIFAdmin(admin.ModelAdmin):

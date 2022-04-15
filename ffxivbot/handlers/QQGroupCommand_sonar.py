@@ -41,7 +41,7 @@ def handle_sonar_config(group, parameters):
     if len(parameters) == 0 or parameters[0] == "help":  # /sonar (help)
         return """本群的 Sonar 推送配置：
 /sonar info: 查看本群当前 Sonar 配置
-/sonar rank/rank_del <50S/60S/70S/80S/90S/大象/小电视/...>: 添加/删除推送的上报类别
+/sonar rank/rank_del <50S/60S/70S/80S/90S/大象/小电视>: 添加/删除推送的上报类别
 /sonar server/server_del <服务器/大区名称>: 添加/删推送的服务器
 """
 
@@ -110,8 +110,8 @@ def QQGroupCommand_sonar(*args, **kwargs):
         parameters = second_command_msg.split(" ")
         while "" in parameters:
             parameters.remove("")
-        if user_info["role"] != "owner":
-            msg = "仅群主有权限设置群 Sonar 推送"
+        if user_info["role"] != "owner" and user_info["role"] != "admin":
+            msg = "仅群主或管理员有权限设置群 Sonar 推送"
         else:
             msg = handle_sonar_config(group, parameters)
 

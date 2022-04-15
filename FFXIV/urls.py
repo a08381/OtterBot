@@ -35,6 +35,7 @@ urlpatterns = [
     path('image/', image),
     # path('hunt/', cache_page(60 * 2)()),
     path('hunt/', hunt),
+    path('hunt/sonar/', hunt_sonar),
     path("music/<str:str_type>", music),
     path("mirai/version/<str:str_type>", mirai),
     url(r'^housing/api', housing_api),

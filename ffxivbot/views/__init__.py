@@ -6,6 +6,7 @@ from .qqpost import qqpost
 from .wechatpost import wechatpost
 from .image import image
 from .hunt import hunt
+from .hunt import hunt_sonar
 from .music import music
 from .qq_login import qq_login
 from .qq_check import qq_check

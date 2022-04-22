@@ -670,7 +670,7 @@
                         console.log(data);
                     }
                 } else {
-                    $('#popup').append("<div class=\"alert alert-success alert-dismissable fade show\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>" + data.msg + data.token + "<br>是否立即<a href=\"#\" class=\"alert-link\" onclick=\"call_gui(" + data.id + ", " + data.token + ")\">下载配置文件</a>？</div>");
+                    $('#popup').append("<div class=\"alert alert-success alert-dismissable fade show\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>" + data.msg + data.token + "<br>是否立即<a href=\"#\" class=\"alert-link\" onclick=\"call_gui(" + data.id + ", '" + data.token + "')\">下载配置文件</a>？</div>");
                 }
             },
         });

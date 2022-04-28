@@ -67,16 +67,13 @@ class PikaPublisher:
 
 class WSConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.pub = PikaPublisher()
+        self.pub = None
         header_list = self.scope["headers"]
         headers = {}
         for (k, v) in header_list:
             headers[k.decode()] = v.decode()
-        true_ip = None
-        try:
-            true_ip = headers["x-forwarded-for"]
-        except BaseException:
-            pass
+        true_ip = headers.get("x-forwarded-for", None)
+        true_ip = headers.get("cf-connecting-ip", true_ip)
         try:
             ws_self_id = headers["x-self-id"]
             ws_access_token = (
@@ -88,7 +85,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             user_agent = headers.get("user-agent", "Unknown")
             if client_role != "Universal":
                 LOGGER.error("Unkown client_role: {}".format(client_role))
-                # await self.close()
+                await self.close()
                 return
             if (
                 "CQHttp" not in user_agent
@@ -130,6 +127,7 @@ class WSConsumer(AsyncWebsocketConsumer):
             await sync_to_async(self.bot.save, thread_sensitive=True)(
                 update_fields=["event_time", "api_channel_name", "event_channel_name"]
             )
+            self.pub = PikaPublisher()
             await self.accept()
         except QQBot.DoesNotExist:
             LOGGER.error(
@@ -151,10 +149,16 @@ class WSConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
         )
-        self.pub.exit()
+        if self.pub:
+            self.pub.exit()
         gc.collect()
 
     async def receive(self, text_data):
+        if not self.pub:
+            LOGGER.error(
+                "WSConsumer PikaPublisher is not initialized"
+            )
+            return
         receive = json.loads(text_data)
 
         if "post_type" in receive.keys():

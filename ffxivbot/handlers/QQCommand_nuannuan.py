@@ -1,6 +1,3 @@
-import base64
-import io
-
 from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
@@ -50,7 +47,6 @@ def QQCommand_nuannuan(*args, **kwargs):
     bot = kwargs["bot"]
     receive = kwargs["receive"]
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
         try:
             # 获取视频av号(aid)
             bvid = get_video_id(15503317)

@@ -70,6 +70,7 @@ class LiveUser(models.Model):
 
 class Server(models.Model):
     name = models.CharField(max_length=16)
+    csv_name = models.CharField(max_length=16, default="", null=True)
     areaId = models.IntegerField(default=1)
     groupId = models.IntegerField(default=25)
     alter_names = models.TextField(default="[]")
@@ -323,6 +324,11 @@ class QQUser(models.Model):
     server = models.ForeignKey(
         Server, on_delete=models.DO_NOTHING, blank=True, null=True
     )
+    xivid_id = models.IntegerField(default=-1, blank=True)
+    xivid_state = models.CharField(default="", max_length=64, blank=True)
+    xivid_token = models.TextField(default="{}", blank=True)
+    xivid_character = models.TextField(default="{}", blank=True)
+    can_manual_upload_hunt = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.user_id)
@@ -570,6 +576,11 @@ class HuntLog(models.Model):
     instance_id = models.IntegerField(default=0, blank=True, null=True)
     log_type = models.CharField(default="", max_length=16)
     time = models.BigIntegerField(default=0)
+    uploader = models.ForeignKey(
+        QQUser, on_delete=models.CASCADE, related_name="upload_hunt_log",
+        null=True, blank=True
+    )
+    uploader_char = models.CharField(default="", max_length=256, blank=True, null=True)
 
     def __str__(self):
         return "{}_{}_{}".format(self.server, self.monster, self.instance_id)
@@ -579,6 +590,10 @@ class HuntLog(models.Model):
             self.id, self.server, self.monster, self.instance_id, self.log_type
         )
 
+class BannedCharacter(models.Model):
+    name = models.CharField(default="", max_length=32, blank=True, null=True)
+    world_id = models.IntegerField(default=0, blank=True, null=True)
+    xivid_id = models.IntegerField(default=-1, blank=True, null=True)
 
 ## class TelegramChannel(models.Model):
 ##     name = models.CharField(default="", max_length=64)

@@ -1,6 +1,9 @@
 {
-  "QQ_BASE_URL": "",
   "WEB_BASE_URL": "https://xn--v9x.net/",
+  "QQ_APP_ID": "",
+  "QQ_KEY": "",
+  "XIVID_CLIENT_ID": "",
+  "XIVID_KEY": "",
   "ACCESS_TOKEN": "",
   "SECRET_KEY": "pinkpink",
   "RANDOMORG_TOKEN": "",

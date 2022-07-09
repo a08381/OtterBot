@@ -25,10 +25,7 @@ def CHECK_NAME_VALID(name: str):
 def QQCommand_mxh(*args, **kwargs):
     action_list = []
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
-
         receive = kwargs["receive"]
-
         msg = "default message"
         receive_msg = receive["message"]
         receive_msg = receive_msg.replace("/mxh", "", 1).strip()

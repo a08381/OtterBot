@@ -1,9 +1,6 @@
-from .QQEventHandler import QQEventHandler
 from .QQUtils import *
 from ffxivbot.models import *
 import logging
-import json
-import random
 import dice
 
 
@@ -11,8 +8,6 @@ def QQCommand_dice(*args, **kwargs):
     action_list = []
     receive = kwargs["receive"]
     try:
-        QQ_BASE_URL = kwargs["global_config"]["QQ_BASE_URL"]
-
         dice_msg = receive["message"].replace("/dice", "", 1).strip()
 
         if len(dice_msg) > 50:

@@ -103,6 +103,7 @@ def QQGroupCommand_sonar(*args, **kwargs):
         action_list = []
         receive = kwargs["receive"]
 
+        bot = kwargs["bot"]
         user_id = receive["user_id"]
         group_id = receive["group_id"]
         msg = "default msg"
@@ -110,7 +111,7 @@ def QQGroupCommand_sonar(*args, **kwargs):
         parameters = second_command_msg.split(" ")
         while "" in parameters:
             parameters.remove("")
-        if user_info["role"] != "owner" and user_info["role"] != "admin":
+        if user_info["role"] != "owner" and user_info["role"] != "admin" and str(user_id) != str(bot.owner_id):
             msg = "仅群主或管理员有权限设置群 Sonar 推送"
         else:
             msg = handle_sonar_config(group, parameters)

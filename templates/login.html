@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-  <link rel="shortcut icon" href="{% static tata.ico %}" type="image/x-icon"/>
+  <link rel="shortcut icon" href="{% static tata.gif %}" type="image/gif"/>
   <title>OtterBot | FFXIV QQ Bot</title>
 
   <!-- Font Awesome Icons -->
@@ -19,12 +19,23 @@
   <link rel="stylesheet" href="{% static "dist/css/AdminLTE.min.css" %}">
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <style>
+      .login-page {
+          background: url("https://api.dujin.org/bing/1920.php") no-repeat fixed;
+          background-size: cover;
+      }
+      .card {
+          background-color: rgba(255, 255, 255, 0.5);
+          border-radius: 20px;
+      }
+      .login-card-body {
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 20px;
+      }
+  </style>
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
-  <div class="login-logo">
-    <a href="/"><b>OtterBot</b> </a>
-  </div>
   {% if err %}
     <div class="alert alert-warning alert-dismissible">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
@@ -35,6 +46,9 @@
   <!-- /.login-logo -->
   <div class="card">
     <div class="card-body login-card-body">
+  <div class="login-logo">
+    <a href="/"><b>OtterBot</b> </a>
+  </div>
       <p class="login-box-msg">For Final Fantasy XIV</p>
 
       <form action="/login/" method="post">
@@ -91,7 +105,7 @@
 <!-- Bootstrap 3.3.6 -->
 <script src="{% static "plugins/bootstrap/js/bootstrap.min.js" %}"></script>
 <!-- iCheck -->
-<!--script src="{% static "plugins/icheck-bootstrap/icheck.min.js"%}"></script-->
+<script src="//cdn.bootcdn.net/ajax/libs/iCheck/1.0.3/icheck.min.js"></script>
 <script>
     $(function () {
         $('input').iCheck({

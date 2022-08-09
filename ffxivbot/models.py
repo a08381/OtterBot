@@ -266,6 +266,7 @@ class PlotQuest(models.Model):
     language_names = models.TextField(default="{}", blank=True)
     endpoint = models.BooleanField(default=False)
     endpoint_desc = models.CharField(max_length=64, default="", blank=True)
+    is_deprecated = models.BooleanField(default=False)
     quest_type = models.IntegerField(
         default=0
     )  # 0:nothing 3:main-scenario 8:special 1,10:other
@@ -380,7 +381,7 @@ class Image(models.Model):
     )
     add_by_bot = models.ForeignKey(
         QQBot,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name="upload_images",
         blank=True,
         null=True,

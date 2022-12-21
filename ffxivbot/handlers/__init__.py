@@ -64,6 +64,7 @@ group_commands = {
     "/lottery": "抽奖",
     "/hunt": "狩猎",
     "/wordcloud": "聊天词云",
+    "/novelai": "AI 作图",
 }
 
 alter_commands = {
@@ -103,6 +104,10 @@ alter_commands = {
     "/nn": "/nuannuan",
     "/mitem": "/market item",
     "/海钓": "/ofish",
+    "/novelai cast": "/novelai generate",
+    "/ncast": "/novelai generate",
+    "/novelai official_cast": "/novelai official_generate",
+    "/nocast": "/novelai official_generate",
 }
 
 # FFXIV Commands
@@ -176,5 +181,6 @@ from .QQGroupCommand_lottery import QQGroupCommand_lottery
 from .QQGroupCommand_command import QQGroupCommand_command
 from .QQGroupCommand_hunt import QQGroupCommand_hunt
 from .QQGroupCommand_wordcloud import QQGroupCommand_wordcloud
+from .QQGroupCommand_novelai import QQGroupCommand_novelai
 
 from .QQGroupChat import QQGroupChat

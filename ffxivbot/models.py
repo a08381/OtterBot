@@ -251,6 +251,8 @@ class QQBot(models.Model):
     sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
     sonar_sub_groups = models.ManyToManyField(QQGroup, related_name="sonar_sub_by_bots", blank=True)
     sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_bots", blank=True)
+    novelai_url = models.CharField(max_length=128, default="", blank=True)
+    novelai_groups = models.ManyToManyField(QQGroup, related_name="novelai_groups", blank=True)
 
     def __str__(self):
         return self.name
@@ -330,6 +332,7 @@ class QQUser(models.Model):
     xivid_token = models.TextField(default="{}", blank=True)
     xivid_character = models.TextField(default="{}", blank=True)
     can_manual_upload_hunt = models.BooleanField(default=True)
+    can_use_novelai = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.user_id)

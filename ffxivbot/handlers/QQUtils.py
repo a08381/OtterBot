@@ -917,8 +917,6 @@ def check_command_enabled(
     command: str,
     bot_commands: dict,
     group_commands: dict = {}):
-    if group_commands.get(command, "enable") == "disable":
-        return False
-    if bot_commands.get(command, "enable") == "disable":
+    if group_commands.get(command, "enable") == "disable" and bot_commands.get(command, "enable") == "disable":
         return False
     return True

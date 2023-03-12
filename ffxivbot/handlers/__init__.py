@@ -30,12 +30,12 @@ commands = {
     "/quest": '任务查询("/quest 狂乱前奏")',
     "/nuannuan": "本周金蝶暖暖作业",
     #"/genshin": "原神圣遗物评分",
-    #"/hso": "好色哦",
+    "/hso": "好色哦",
     "/hhsh": "好好说话",
     "/bot": "机器人相关功能",
     "/ifttt": "IFTTT推送系统",
     "/akhr": "罗德岛公开招募",
-    #"/share": "发送微博分享",
+    # "/share": "发送微博分享",
     # "/trash":"你是什么垃圾？",
     "/shorten": "微博短链",
     "/mxh": '梅溪湖cp短打生成器（"/mxh 海德林 佐迪亚克"）',
@@ -44,7 +44,7 @@ commands = {
     "/yiff": "What does the fox say?",
     "/ofish": "获取最近海钓航班",
     "/luck": "浅草寺求签",
-    #"/abv": "Bilibili av/BV号互转",
+    # "/abv": "Bilibili av/BV号互转",
 }
 
 group_commands = {

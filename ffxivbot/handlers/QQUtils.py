@@ -893,10 +893,12 @@ def update_konachan_tags():
               open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "konachan_tags.json"), 'w',
                    encoding='utf-8'))
 
+
 def update_yiff_tags():
     url = "https://e621.net/tags.json?limit=999999&page={}"
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36 Edg/80.0.361.66'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/80.0.3987.132 Safari/537.36 Edg/80.0.361.66'
     }
     reserved_tags = {}
     for i in range(1, 900):
@@ -909,3 +911,14 @@ def update_yiff_tags():
         }
         reserved_tags.update(tags)
     json.dump(reserved_tags, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "yiff_tags.json"), 'w', encoding='utf-8'))
+
+
+def check_command_enabled(
+    command: str,
+    bot_commands: dict,
+    group_commands: dict = {}):
+    if group_commands.get(command, "enable") == "disable":
+        return False
+    if bot_commands.get(command, "enable") == "disable":
+        return False
+    return True

@@ -20,9 +20,14 @@ def QQCommand_hso(*args, **kwargs):
         action_list = []
         receive = kwargs["receive"]
         bot = kwargs["bot"]
+        group = kwargs.get("group", None)
         user = QQUser.objects.get(user_id=receive["user_id"])
+        bot_commands = json.loads(bot.commands)
+        group_commands = json.loads(group.commands) if group else {}
         if time.time() < user.last_api_time + 15:
             msg = "[CQ:at,qq={}] 技能冷却中".format(user)
+        elif group and not check_command_enabled('/hso', bot_commands, group_commands):
+            pass
         else:
             msg = "好色哦"
             second_command_msg = receive["message"].replace("/hso", "", 1).strip()
@@ -87,14 +92,13 @@ def QQCommand_hso(*args, **kwargs):
                 api_url = "https://konachan.com/post.json?{}".format(params)
                 # print(api_url + "\n===============================================")
                 r = requests.get(api_url, timeout=(5, 60))
-                img_json = r.json()
+                full_img_json = r.json()
 
-                if receive["message_type"] == "group":
-                    tmp_list = []
-                    for item in img_json:
-                        if item["rating"] == "s":
-                            tmp_list.append(item)
-                    img_json = tmp_list
+                is_safe = receive.get("message_type", "group") == "group" or True
+                if is_safe:
+                    img_json = list(filter(lambda x: x.get("rating", "e") == "s", full_img_json))
+                else:
+                    img_json = full_img_json
 
                 if not img_json:
                     msg = "未能找到所需图片"

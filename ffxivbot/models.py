@@ -111,7 +111,7 @@ class QQGroup(models.Model):
     )
     sonar_sub_servers = models.ManyToManyField(Server, related_name="sonar_sub_by_groups", blank=True)
     sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
-    chat_model = models.CharField(default="tuling", max_length=32, blank=True)
+    chat_model = models.CharField(default="chatgpt", max_length=32, blank=True)
 
     def __str__(self):
         return self.group_id
@@ -248,7 +248,7 @@ class QQBot(models.Model):
     command_stat = models.TextField(default="{}")
     share_banned = models.BooleanField(default=False)
     img_banned = models.BooleanField(default=False)
-    commands = models.TextField(default="{}")
+    commands = models.TextField(default="{\"/chat\": \"disable\"}")
     sonar = models.BooleanField(default=False)
     sonar_sub_ranks = models.TextField(default="[]", null=True, blank=True)
     sonar_sub_groups = models.ManyToManyField(QQGroup, related_name="sonar_sub_by_bots", blank=True)

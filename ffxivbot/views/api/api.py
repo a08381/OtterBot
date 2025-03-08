@@ -1,5 +1,5 @@
 import logging
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from .ffxiveureka import handle_ffxiveureka
 from .ffxivsc import handle_ffxivsc
@@ -11,6 +11,10 @@ from .uptime_kuma import handle_uptime_kuma
 @csrf_exempt
 def api(req):
     httpresponse = None
+    if req.method == "GET":
+        jump = req.GET.get("jump")
+        if jump:
+            return HttpResponseRedirect(jump)
     if req.method == "POST":
         tracker = req.GET.get("tracker")
         print(tracker)
